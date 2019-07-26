@@ -1,0 +1,18 @@
+version: "2"
+services:
+  portfolio:
+    build:
+      context: ./
+      args:
+         JAR_FILE: ./target/rssreader-*.jar
+    container_name: radiotgrabbing.anagorny.com
+    depends_on:
+      - nginx-proxy
+      - letsencrypt
+    environment:
+      - VIRTUAL_PORT=3000
+      - VIRTUAL_HOST=radiotgrabbing.anagorny.com
+      - LETSENCRYPT_HOST=radiotgrabbing.anagorny.com
+      - LETSENCRYPT_EMAIL=admin@anagorny.com
+    networks:
+      - proxy_net
