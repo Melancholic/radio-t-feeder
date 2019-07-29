@@ -1,6 +1,9 @@
 package com.anagorny.rssreader.service
 
+import java.io.File
 import java.util.*
+
+data class FeedItemWithFile (val item: FeedItem, var file: File? = null)
 
 data class FeedItem (
         val title: String,
