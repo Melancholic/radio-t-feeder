@@ -1,0 +1,15 @@
+package com.anagorny.rssreader.service
+
+import java.util.*
+
+data class FeedItem (
+        val title: String,
+        val authors: String,
+        val audioUrl: String,
+        val audioType: String,
+        val description: String,
+        val descriptionType: String,
+        val podcastUrl: String,
+        val publishedDate: Date,
+        val thumbUrl: String?
+)

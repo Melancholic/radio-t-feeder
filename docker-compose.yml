@@ -1,6 +1,6 @@
 version: "2"
 services:
-  portfolio:
+  radiotgrabbing:
     build:
       context: ./
       args:
@@ -9,10 +9,18 @@ services:
     depends_on:
       - nginx-proxy
       - letsencrypt
+    volumes:
+      - /tmp/:/tmp/
     environment:
       - VIRTUAL_PORT=3000
       - VIRTUAL_HOST=radiotgrabbing.anagorny.com
       - LETSENCRYPT_HOST=radiotgrabbing.anagorny.com
       - LETSENCRYPT_EMAIL=admin@anagorny.com
+      - TG_CHANNEL_ID=<CHANGE ME>
+      - TG_BOT_TOKEN=<CHANGE ME>
+      - TG_BOT_NAME=<CHANGE ME>
+      - FFMPEG_WORK_DIR=/tmp/
+      - FFMPEG_BIN_PATH=/usr/bin/ffmpeg
+      - FFPROBE_BIN_PATH=/usr/bin/ffprobe
     networks:
       - proxy_net
