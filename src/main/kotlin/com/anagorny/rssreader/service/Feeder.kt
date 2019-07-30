@@ -62,7 +62,7 @@ class Feeder {
                         val message = telegramBot.sendAudio(file, feed) ?: throw TelegramApiException("Message is null")
                         removeFile(file, logger)
                     } catch (e: Exception) {
-                        logger.error("Message cant send to Telegram", e)
+                        logger.error("Message '${feed}' cant send to Telegram", e)
                     }
                 }
             } catch (e: Exception) {

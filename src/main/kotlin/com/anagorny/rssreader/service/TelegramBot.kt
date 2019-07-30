@@ -1,5 +1,6 @@
 package com.anagorny.rssreader.service
 
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import org.telegram.telegrambots.bots.TelegramLongPollingBot
@@ -13,6 +14,8 @@ import java.net.URL
 
 @Component
 class TelegramBot : TelegramLongPollingBot() {
+    private val logger = LoggerFactory.getLogger(TelegramBot::class.java)
+
 
     @Value("\${radio_t_feeder.telegram.chat_id}")
     private lateinit var tgСhannelIdentifier: String
@@ -66,8 +69,13 @@ class TelegramBot : TelegramLongPollingBot() {
         sendAudioRequest.performer = "Umputun, Bobuk, Gray, Ksenks"
         sendAudioRequest.title = feed.title
         if (!feed.thumbUrl.isNullOrBlank()) {
-            sendAudioRequest.thumb = InputFile(URL(feed.thumbUrl).openStream(), feed.title)
+            try {
+                sendAudioRequest.thumb = InputFile(URL(feed.thumbUrl).openStream(), feed.title)
+            } catch (e: Exception) {
+                logger.error("Cant download thumb file: ${feed.thumbUrl}", e)
+            }
         }
+        //TODO retrying policy
         return execute(sendAudioRequest)
     }
 }
