@@ -73,6 +73,6 @@ fun removeFile(file: File, logger: Logger) {
             throw Exception("file $path cant be deleted")
         }
     } catch (e: Exception) {
-        logger.error("Error while remove file ", e)
+        logger.error("Error while remove file", e)
     }
 }

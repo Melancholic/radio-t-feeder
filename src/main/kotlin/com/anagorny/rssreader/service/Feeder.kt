@@ -7,13 +7,15 @@ import com.rometools.rome.feed.synd.SyndFeed
 import com.rometools.rome.io.FeedException
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.core.task.AsyncListenableTaskExecutor
 import org.springframework.stereotype.Service
-import org.telegram.telegrambots.meta.exceptions.TelegramApiException
 import java.io.IOException
 import java.net.URL
 import java.util.concurrent.Callable
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Future
+import java.util.concurrent.atomic.AtomicInteger
 import javax.annotation.PostConstruct
 
 
@@ -30,51 +32,69 @@ class Feeder {
     @Autowired
     lateinit var threadPoolTaskExecutor: AsyncListenableTaskExecutor
 
+    private val offset: AtomicInteger = AtomicInteger()
+
+    @Value("\${radio_t_feeder.start.offset}")
+    private var startOffset: Int = 0
+
     @PostConstruct
-    fun refresh() {
+    private fun init() {
+        offset.set(startOffset)
+    }
+
+    fun archiveProcessing() {
         val startDate = System.currentTimeMillis()
-        logger.info("Rss read started!")
+        logger.info("Archive RSS read started!")
         val entries = getMostRecentNews("https://radio-t.com/podcast-archives.rss").reversed()
-        logger.info("RSS  feed received with count = ${entries.size}")
-        val  futuresWithDownloaded = LinkedHashSet<Future<FeedItemWithFile>>()
-        var filesDoneCount: Int = 0
-        for (entry in entries) {
+        val total = entries.size-startOffset
+        logger.info("RSS  feed received with count = $total")
+        val futuresWithDownloaded = ConcurrentHashMap<Int, Future<FeedItemWithFile>>()
 
-            val future : Future<FeedItemWithFile> = threadPoolTaskExecutor.submit(Callable<FeedItemWithFile> {
-                val feed = buildFeedItem(entry)
-                logger.info("Feed '${feed.title}' is builded, downloading...")
-                val file = ffmpegEncoder.downloadAndCompressMp3(feed.audioUrl)
-                logger.info("${++filesDoneCount}/${entries.size} files downloaded and compressed on ${System.currentTimeMillis() - startDate} ms")
-                return@Callable FeedItemWithFile(item = feed, file = file)
-            })
-
-            futuresWithDownloaded.add(future)
+        for ((index, entry) in entries.withIndex()) {
+            if (index < startOffset) continue
+            val future: Future<FeedItemWithFile> = asyncPreparingFile(entry, total, index+1)
+            futuresWithDownloaded.putIfAbsent(index, future)
         }
 
-        for (future in futuresWithDownloaded) {
-            try {
-                val feedWithFile = future.get()
-                val feed = feedWithFile.item
-                val file = feedWithFile.file
-                if (file != null) {
-                    try {
-                        //TODO processing message
-                        val message = telegramBot.sendAudio(file, feed) ?: throw TelegramApiException("Message is null")
-                        removeFile(file, logger)
-                    } catch (e: Exception) {
-                        logger.error("Message '${feed}' cant send to Telegram", e)
+
+        for (offset in futuresWithDownloaded.keys().asSequence().sorted()) {
+            val future = futuresWithDownloaded.getValue(offset)
+            val feedWithFile = future.get()
+            val feed = feedWithFile.item
+            val file = feedWithFile.file
+            if (file != null) {
+                //TODO processing message
+                try {
+                    val message = telegramBot.sendAudio(file, feed)
+                    if (message == null) {
+                        logger.info("Message with offset=$offset cant sended to Telegram, skiping...")
+                    } else {
+                        logger.info("Message with offset=$offset successfully sended to Telegram")
                     }
+                    logger.info("Message with offset=$offset successfully processed")
+                } catch (e: Exception) {
+                    throw e
+                } finally {
+                    removeFile(file, logger)
                 }
-            } catch (e: Exception) {
-                logger.error("Error while process: ", e)
             }
         }
 
-        logger.info("DONE! ${System.currentTimeMillis() - startDate} ms")
+        logger.info("Archive RSS has been processed on ${System.currentTimeMillis() - startDate} ms")
 
     }
 
-    fun buildFeedItem(entry: SyndEntry) = FeedItem(
+    private fun asyncPreparingFile(entry: SyndEntry, total: Int, current: Int): Future<FeedItemWithFile> = threadPoolTaskExecutor.submit(Callable<FeedItemWithFile> {
+        val startDate = System.currentTimeMillis()
+        val feed = buildFeedItem(entry)
+        logger.info("Feed '${feed.title}' is builded, downloading...")
+        val file = ffmpegEncoder.downloadAndCompressMp3(feed.audioUrl)
+        logger.info("$current/$total files downloaded and compressed on ${System.currentTimeMillis() - startDate} ms")
+        return@Callable FeedItemWithFile(item = feed, file = file)
+    })
+
+
+    private fun buildFeedItem(entry: SyndEntry) = FeedItem(
             title = entry.title,
             authors = entry.authors.joinToString { ", " },
             audioUrl = entry.enclosures.firstOrNull()?.url ?: "",
@@ -83,7 +103,7 @@ class Feeder {
             descriptionType = entry.description?.type ?: "",
             podcastUrl = entry.uri,
             publishedDate = entry.publishedDate,
-            thumbUrl = entry.foreignMarkup?.first{ x -> x.name == "image" }?.attributes?.first()?.value
+            thumbUrl = entry.foreignMarkup?.first { x -> x.name == "image" }?.attributes?.first()?.value
     )
 
     fun getMostRecentNews(feedUrl: String): List<SyndEntry> {

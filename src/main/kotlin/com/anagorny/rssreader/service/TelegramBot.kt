@@ -8,8 +8,11 @@ import org.telegram.telegrambots.meta.api.methods.send.SendAudio
 import org.telegram.telegrambots.meta.api.objects.InputFile
 import org.telegram.telegrambots.meta.api.objects.Message
 import org.telegram.telegrambots.meta.api.objects.Update
+import org.telegram.telegrambots.meta.exceptions.TelegramApiException
 import java.io.File
+import java.lang.RuntimeException
 import java.net.URL
+import java.util.concurrent.TimeUnit
 
 
 @Component
@@ -27,23 +30,17 @@ class TelegramBot : TelegramLongPollingBot() {
     private lateinit var tgBotName: String
 
 
-    override fun onUpdateReceived(update: Update) {
+    @Value("\${radio_t_feeder.telegram.send.retry.times}")
+    private var retryTimes = 1
 
-//        // We check if the update has a message and the message has text
-//        if (update.hasMessage() && update.message.hasText()) {
-//            // Set variables
-//            val message_text = update.message.text
-//            val chat_id = update.message.chatId!!
-//            val message = SendMessage() // Create a message object object
-//                    .setChatId(chat_id)
-//                    .setText(message_text)
-////            try {
-////                sendMessage(message) // Sending our message object to user
-////            } catch (e: TelegramApiException) {
-////                e.printStackTrace()
-////            }
-//
-//        }
+    @Value("\${radio_t_feeder.telegram.send.retry.timeout.ms}")
+    private var retryTimeout: Long = 1L
+
+    @Value("\${radio_t_feeder.telegram.send.ignore.error}")
+    private var ignoreError: Boolean = true
+
+    override fun onUpdateReceived(update: Update) {
+        TODO()
     }
 
     override fun getBotUsername(): String {
@@ -68,6 +65,7 @@ class TelegramBot : TelegramLongPollingBot() {
         //TODO meta from audiofile
         sendAudioRequest.performer = "Umputun, Bobuk, Gray, Ksenks"
         sendAudioRequest.title = feed.title
+
         if (!feed.thumbUrl.isNullOrBlank()) {
             try {
                 sendAudioRequest.thumb = InputFile(URL(feed.thumbUrl).openStream(), feed.title)
@@ -75,7 +73,28 @@ class TelegramBot : TelegramLongPollingBot() {
                 logger.error("Cant download thumb file: ${feed.thumbUrl}", e)
             }
         }
-        //TODO retrying policy
-        return execute(sendAudioRequest)
+
+
+        var exception: Exception? = null
+        for (index in 1 .. retryTimes) {
+            try {
+                throw RuntimeException("wefwefwefwfewfe")
+                return execute(sendAudioRequest) ?: throw TelegramApiException("Mesage is null!")
+            } catch (e : Exception) {
+                exception = e
+                logger.error("Error while sending message '${feed.title}', tryies used $index/$retryTimes", e)
+                TimeUnit.MILLISECONDS.sleep(retryTimeout)
+                continue
+            }
+
+        }
+
+        logger.error("I cant sended message '${feed.title}'($feed) to telegram", exception)
+
+        return if (ignoreError) {
+            null
+        } else {
+            throw RuntimeException("I cant sended message '${feed.title}'($feed) to telegram", exception)
+        }
     }
 }
