@@ -78,7 +78,6 @@ class TelegramBot : TelegramLongPollingBot() {
         var exception: Exception? = null
         for (index in 1 .. retryTimes) {
             try {
-                throw RuntimeException("wefwefwefwfewfe")
                 return execute(sendAudioRequest) ?: throw TelegramApiException("Mesage is null!")
             } catch (e : Exception) {
                 exception = e
