@@ -46,13 +46,13 @@ class Feeder {
         val startDate = System.currentTimeMillis()
         logger.info("Archive RSS read started!")
         val entries = getMostRecentNews("https://radio-t.com/podcast-archives.rss").reversed()
-        val total = entries.size-startOffset
+        val total = entries.size - startOffset
         logger.info("RSS  feed received with count = $total")
         val futuresWithDownloaded = ConcurrentHashMap<Int, Future<FeedItemWithFile>>()
 
         for ((index, entry) in entries.withIndex()) {
             if (index < startOffset) continue
-            val future: Future<FeedItemWithFile> = asyncPreparingFile(entry, total, index+1)
+            val future: Future<FeedItemWithFile> = asyncPreparingFile(entry, total, index + 1)
             futuresWithDownloaded.putIfAbsent(index, future)
         }
 
@@ -88,23 +88,29 @@ class Feeder {
         val startDate = System.currentTimeMillis()
         val feed = buildFeedItem(entry)
         logger.info("Feed '${feed.title}' is builded, downloading...")
-        val file = ffmpegEncoder.downloadAndCompressMp3(feed.audioUrl)
+        val file = ffmpegEncoder.downloadAndCompressMp3(feed)
         logger.info("$current/$total files downloaded and compressed on ${System.currentTimeMillis() - startDate} ms")
         return@Callable FeedItemWithFile(item = feed, file = file)
     })
 
 
-    private fun buildFeedItem(entry: SyndEntry) = FeedItem(
-            title = entry.title,
-            authors = entry.authors.joinToString { ", " },
-            audioUrl = entry.enclosures.firstOrNull()?.url ?: "",
-            audioType = entry.enclosures.firstOrNull()?.type ?: "",
-            description = rawDescription(entry.description?.value ?: "", entry.uri),
-            descriptionType = entry.description?.type ?: "",
-            podcastUrl = entry.uri,
-            publishedDate = entry.publishedDate,
-            thumbUrl = entry.foreignMarkup?.first { x -> x.name == "image" }?.attributes?.first()?.value
-    )
+    private fun buildFeedItem(entry: SyndEntry): FeedItem {
+        val description = parseDescription(entry.description?.value ?: "", entry.uri)
+        val audioUrlAlter = entry.enclosures.firstOrNull()?.url
+        val audioUrl = parseAudioUrl(entry.description?.value ?: "") ?: audioUrlAlter
+        return FeedItem(
+                title = entry.title,
+                authors = entry.authors.joinToString { ", " },
+                audioType = entry.enclosures.firstOrNull()?.type ?: "",
+                audioUrlAlter = audioUrlAlter,
+                audioUrl = audioUrl,
+                description = description,
+                descriptionType = entry.description?.type ?: "",
+                podcastUrl = entry.uri,
+                publishedDate = entry.publishedDate,
+                thumbUrl = entry.foreignMarkup?.first { x -> x.name == "image" }?.attributes?.first()?.value
+        )
+    }
 
     fun getMostRecentNews(feedUrl: String): List<SyndEntry> {
         try {
@@ -121,3 +127,4 @@ class Feeder {
         return feedFetcher.retrieveFeed(URL(feedUrl))
     }
 }
+

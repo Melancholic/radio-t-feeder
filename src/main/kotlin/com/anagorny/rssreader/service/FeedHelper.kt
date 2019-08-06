@@ -1,6 +1,6 @@
 package com.anagorny.rssreader.service
 
-fun rawDescription(descriptionBody: String, sourceUrl: String = ""): String {
+fun parseDescription(descriptionBody: String, sourceUrl: String = ""): String {
     val liTags = mutableListOf<String>()
     descriptionBody.replace("<li>.+</li>".toRegex()) { liTags.add(("&#10148; ${it.value}")); "" }
 
@@ -13,4 +13,16 @@ fun rawDescription(descriptionBody: String, sourceUrl: String = ""): String {
 
     if (sourceUrl.isNotEmpty()) result += "\n\n Подробнее - $sourceUrl"
     return result
+}
+
+fun parseAudioUrl(descriptionBody: String): String? {
+    var audioTag: String = ""
+
+    descriptionBody.replace("<audio.+>".toRegex()) { audioTag = it.value; "" }
+
+
+    var sourceUrl: String? = null
+    audioTag.replace("src=\"[^\"]+\"".toRegex()) { sourceUrl = it.value.replace("src=\"", "").replace("\"", ""); "" }
+
+    return sourceUrl
 }
