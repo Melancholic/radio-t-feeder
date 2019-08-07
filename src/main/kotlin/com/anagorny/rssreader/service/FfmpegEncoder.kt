@@ -42,30 +42,34 @@ class FfmpegEncoder {
 
 
     fun downloadAndCompressMp3(feedItem: FeedItem): File {
-        val srcUrl = feedItem.audioUrl ?: feedItem.audioUrlAlter
+        feedItem.audioUrl ?: feedItem.audioUrlAlter
         ?: throw RuntimeException("Cannot download audio file for podcast '${feedItem.title}' because all audio url is null")
 
-        var dowloadedFile: File? = null
+        var downloadedFile: File? = null
 
         for (index in 1..retryTimes) {
-            dowloadedFile = downloadMp3(srcUrl)
-            if (dowloadedFile == null) {
-                if (feedItem.audioUrlAlter != null && srcUrl != feedItem.audioUrlAlter) {
-                    logger.info("Cant read file from '$srcUrl', but have alter url='${feedItem.audioUrlAlter}', downloading...")
-                    dowloadedFile = downloadMp3(feedItem.audioUrlAlter)
+            if (feedItem.audioUrl != null) {
+                downloadedFile = downloadMp3(feedItem.audioUrl)
+            }
+            if (downloadedFile == null) {
+                if (feedItem.audioUrlAlter != null && feedItem.audioUrl != feedItem.audioUrlAlter) {
+                    logger.info("Cant read file from '${feedItem.audioUrl}', but have alter url='${feedItem.audioUrlAlter}', downloading...")
+                    downloadedFile = downloadMp3(feedItem.audioUrlAlter)
                 }
             }
-            if (dowloadedFile != null) {
+            if (downloadedFile != null) {
                 break
             }
             logger.error("Error while downloading file for '${feedItem.title}', tryies used $index/$retryTimes")
             TimeUnit.MILLISECONDS.sleep(retryTimeout)
         }
 
-        if (dowloadedFile == null) throw RuntimeException("Cannot download audio file for podcast '${feedItem.title}' because cant read file (downloaded file is null)")
+        if (downloadedFile == null) {
+            throw RuntimeException("Cannot download audio file for podcast '${feedItem.title}' because cant read file (downloaded file is null)")
+        }
 
-        val fileName = dowloadedFile.name
-        val srcFilePath = dowloadedFile.absolutePath
+        val fileName = downloadedFile.name
+        val srcFilePath = downloadedFile.absolutePath
 
         logger.info("Source(no-compress) file downloaded to $srcFilePath...")
         val outFileName = fileName.replace(".mp3", "-32kbps.mp3")
