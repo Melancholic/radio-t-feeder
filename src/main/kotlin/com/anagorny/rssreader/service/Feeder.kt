@@ -10,6 +10,7 @@ import com.rometools.rome.feed.synd.SyndFeed
 import com.rometools.rome.io.FeedException
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.core.task.AsyncListenableTaskExecutor
 import org.springframework.stereotype.Service
 import java.io.IOException
@@ -37,6 +38,9 @@ class Feeder {
     @Autowired
     lateinit var metaInfoContainer: MetaInfoContainer
 
+    @Value("\${radio_t_feedar.archive.rss.url}")
+    private lateinit var archiveRssUrl: String
+
     private val offset: AtomicInteger = AtomicInteger()
 
     private var startOffset: Int = 0
@@ -50,7 +54,7 @@ class Feeder {
     fun archiveProcessing() {
         val startDate = System.currentTimeMillis()
         logger.info("Archive RSS read started!")
-        val entries = getMostRecentNews("https://radio-t.com/podcast-archives.rss").reversed()
+        val entries = getMostRecentNews(archiveRssUrl).reversed()
         val total = entries.size - startOffset
         logger.info("RSS  feed received with count = $total")
         val futuresWithDownloaded = ConcurrentHashMap<Int, Future<FeedItemWithFile>>()
