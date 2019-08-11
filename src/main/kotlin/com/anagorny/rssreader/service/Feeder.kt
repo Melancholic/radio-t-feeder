@@ -1,5 +1,8 @@
 package com.anagorny.rssreader.service
 
+import com.anagorny.rssreader.model.FeedItem
+import com.anagorny.rssreader.model.FeedItemWithFile
+import com.anagorny.rssreader.model.MetaInfoContainer
 import com.rometools.fetcher.FetcherException
 import com.rometools.fetcher.impl.HttpURLFeedFetcher
 import com.rometools.rome.feed.synd.SyndEntry
@@ -7,7 +10,6 @@ import com.rometools.rome.feed.synd.SyndFeed
 import com.rometools.rome.io.FeedException
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.core.task.AsyncListenableTaskExecutor
 import org.springframework.stereotype.Service
 import java.io.IOException
@@ -32,13 +34,16 @@ class Feeder {
     @Autowired
     lateinit var threadPoolTaskExecutor: AsyncListenableTaskExecutor
 
+    @Autowired
+    lateinit var metaInfoContainer: MetaInfoContainer
+
     private val offset: AtomicInteger = AtomicInteger()
 
-    @Value("\${radio_t_feeder.start.offset}")
     private var startOffset: Int = 0
 
     @PostConstruct
     private fun init() {
+        startOffset = metaInfoContainer.metaInfoEntity.lastOffset ?: 0
         offset.set(startOffset)
     }
 
@@ -50,8 +55,7 @@ class Feeder {
         logger.info("RSS  feed received with count = $total")
         val futuresWithDownloaded = ConcurrentHashMap<Int, Future<FeedItemWithFile>>()
 
-        for ((index, entry) in entries.withIndex()) {
-            if (index < startOffset) continue
+        for ((index, entry) in entries.withIndex().filter { it.index > startOffset }) {
             val future: Future<FeedItemWithFile> = asyncPreparingFile(entry, total, index + 1)
             futuresWithDownloaded.putIfAbsent(index, future)
         }
@@ -67,9 +71,13 @@ class Feeder {
                 try {
                     val message = telegramBot.sendAudio(file, feed)
                     if (message == null) {
-                        logger.info("Message with offset=$offset cant sended to Telegram, skiping...")
+                        logger.error("Message with offset=$offset cant sended to Telegram (message is null!!!)")
+                        metaInfoContainer.append(offset, feed)
                     } else {
                         logger.info("Message with offset=$offset successfully sended to Telegram")
+                        feed.tgMessageId = message.messageId
+                        feed.tgFileId = message.audio.fileId
+                        metaInfoContainer.append(offset, feed)
                     }
                     logger.info("Message with offset=$offset successfully processed")
                 } catch (e: Exception) {
@@ -79,7 +87,6 @@ class Feeder {
                 }
             }
         }
-
         logger.info("Archive RSS has been processed on ${System.currentTimeMillis() - startDate} ms")
 
     }

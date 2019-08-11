@@ -1,4 +1,4 @@
-package com.anagorny.rssreader.service
+package com.anagorny.rssreader.model
 
 import java.io.File
 import java.util.*
@@ -16,4 +16,7 @@ data class FeedItem (
         val podcastUrl: String,
         val publishedDate: Date,
         val thumbUrl: String?
-)
+) {
+    var tgMessageId: Int? = null
+    var tgFileId: String? = null
+}

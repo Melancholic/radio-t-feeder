@@ -1,16 +1,14 @@
 package com.anagorny.rssreader.service
 
+import com.anagorny.rssreader.model.MetaInfoContainer
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.CommandLineRunner
-import org.springframework.context.ApplicationContext
-import org.springframework.stereotype.Service
-import org.springframework.context.ConfigurableApplicationContext
 import org.springframework.boot.ExitCodeGenerator
 import org.springframework.boot.SpringApplication
-
-
-
+import org.springframework.context.ApplicationContext
+import org.springframework.context.ConfigurableApplicationContext
+import org.springframework.stereotype.Service
 
 
 @Service
@@ -24,6 +22,9 @@ class ConsoleAppService : CommandLineRunner {
     @Autowired
     lateinit var feeder: Feeder
 
+    @Autowired
+    lateinit var metaInfoContainer: MetaInfoContainer
+
     override fun run(vararg args: String?) {
         logger.info("Console app started with args: ${args.joinToString(", ")}")
 
@@ -32,6 +33,8 @@ class ConsoleAppService : CommandLineRunner {
         } catch (e: Exception) {
             logger.error("Error while archive processing", e)
             closeApp(COMMON_ERR_EXIT_CODE)
+        } finally {
+            metaInfoContainer.commit()
         }
         closeApp()
     }

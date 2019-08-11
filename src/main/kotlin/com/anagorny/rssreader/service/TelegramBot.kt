@@ -1,5 +1,6 @@
 package com.anagorny.rssreader.service
 
+import com.anagorny.rssreader.model.FeedItem
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
@@ -10,7 +11,6 @@ import org.telegram.telegrambots.meta.api.objects.Message
 import org.telegram.telegrambots.meta.api.objects.Update
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException
 import java.io.File
-import java.lang.RuntimeException
 import java.net.URL
 import java.util.concurrent.TimeUnit
 

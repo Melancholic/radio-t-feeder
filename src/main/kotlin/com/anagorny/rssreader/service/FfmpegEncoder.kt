@@ -1,5 +1,6 @@
 package com.anagorny.rssreader.service
 
+import com.anagorny.rssreader.model.FeedItem
 import net.bramp.ffmpeg.FFmpeg
 import net.bramp.ffmpeg.FFmpegExecutor
 import net.bramp.ffmpeg.FFprobe
