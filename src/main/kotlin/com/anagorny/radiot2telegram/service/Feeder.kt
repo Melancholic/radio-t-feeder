@@ -1,8 +1,8 @@
-package com.anagorny.rssreader.service
+package com.anagorny.radiot2telegram.service
 
-import com.anagorny.rssreader.model.FeedItem
-import com.anagorny.rssreader.model.FeedItemWithFile
-import com.anagorny.rssreader.model.MetaInfoContainer
+import com.anagorny.radiot2telegram.model.FeedItem
+import com.anagorny.radiot2telegram.model.FeedItemWithFile
+import com.anagorny.radiot2telegram.model.MetaInfoContainer
 import com.rometools.fetcher.FetcherException
 import com.rometools.fetcher.impl.HttpURLFeedFetcher
 import com.rometools.rome.feed.synd.SyndEntry
@@ -55,7 +55,7 @@ class Feeder {
         val startDate = System.currentTimeMillis()
         logger.info("Archive RSS read started!")
         val entries = getMostRecentNews(archiveRssUrl).reversed()
-        val total = entries.size - startOffset
+        val total = (entries.size - 1) - startOffset
         logger.info("RSS  feed received with count = $total")
         val futuresWithDownloaded = ConcurrentHashMap<Int, Future<FeedItemWithFile>>()
 

@@ -1,4 +1,4 @@
-package com.anagorny.rssreader.model
+package com.anagorny.radiot2telegram.model
 
 import com.fasterxml.jackson.core.util.DefaultPrettyPrinter
 import com.fasterxml.jackson.databind.ObjectMapper

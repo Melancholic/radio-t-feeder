@@ -1,6 +1,6 @@
-package com.anagorny.rssreader.service
+package com.anagorny.radiot2telegram.service
 
-import com.anagorny.rssreader.model.FeedItem
+import com.anagorny.radiot2telegram.model.FeedItem
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component

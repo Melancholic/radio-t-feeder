@@ -1,6 +1,6 @@
-package com.anagorny.rssreader.service
+package com.anagorny.radiot2telegram.service
 
-import com.anagorny.rssreader.model.MetaInfoContainer
+import com.anagorny.radiot2telegram.model.MetaInfoContainer
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.CommandLineRunner

@@ -1,4 +1,4 @@
-package com.anagorny.rssreader.model
+package com.anagorny.radiot2telegram.model
 
 import java.io.File
 import java.util.*

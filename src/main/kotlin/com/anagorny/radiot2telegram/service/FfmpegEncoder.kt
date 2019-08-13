@@ -1,6 +1,6 @@
-package com.anagorny.rssreader.service
+package com.anagorny.radiot2telegram.service
 
-import com.anagorny.rssreader.model.FeedItem
+import com.anagorny.radiot2telegram.model.FeedItem
 import net.bramp.ffmpeg.FFmpeg
 import net.bramp.ffmpeg.FFmpegExecutor
 import net.bramp.ffmpeg.FFprobe

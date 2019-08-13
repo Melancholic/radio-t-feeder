@@ -1,4 +1,4 @@
-package com.anagorny.rssreader.service
+package com.anagorny.radiot2telegram.service
 
 fun parseDescription(descriptionBody: String, sourceUrl: String = ""): String {
     val liTags = mutableListOf<String>()

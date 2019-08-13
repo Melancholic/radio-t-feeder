@@ -1,6 +1,6 @@
-package com.anagorny.rssreader.config
+package com.anagorny.radiot2telegram.config
 
-import com.anagorny.rssreader.model.MetaInfoContainer
+import com.anagorny.radiot2telegram.model.MetaInfoContainer
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import org.springframework.beans.factory.annotation.Value
@@ -12,7 +12,7 @@ import org.springframework.scheduling.annotation.EnableScheduling
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor
 
 @Configuration
-@ComponentScan("com.anagorny.rssreader")
+@ComponentScan("com.anagorny.radiot2telegram")
 @EnableScheduling
 open class SpringContext {
 
