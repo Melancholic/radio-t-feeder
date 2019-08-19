@@ -4,10 +4,7 @@ import com.anagorny.radiot2telegram.model.MetaInfoContainer
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.CommandLineRunner
-import org.springframework.boot.ExitCodeGenerator
-import org.springframework.boot.SpringApplication
 import org.springframework.context.ApplicationContext
-import org.springframework.context.ConfigurableApplicationContext
 import org.springframework.stereotype.Service
 
 
@@ -42,12 +39,12 @@ class ConsoleAppService : CommandLineRunner {
 
     private fun closeApp(exitCode: Int = SUCCESS_EXIT_CODE) {
         if (exitCode != SUCCESS_EXIT_CODE) {
-            SpringApplication.exit(applicationContext, ExitCodeGenerator {
+//            SpringApplication.exit(applicationContext, ExitCodeGenerator {
                 logger.info("Console app has been shutdown with exit code = $exitCode")
-                return@ExitCodeGenerator exitCode
-            })
+//                return@ExitCodeGenerator exitCode
+//            })
         } else {
-            (applicationContext as ConfigurableApplicationContext).close()
+//            (applicationContext as ConfigurableApplicationContext).close()
             logger.info("Console app has been closed with exit code = $exitCode")
         }
     }
