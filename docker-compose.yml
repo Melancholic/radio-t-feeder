@@ -4,23 +4,10 @@ services:
     build:
       context: ./
       args:
-         JAR_FILE: ./target/radiot2telegram-*.jar
-    container_name: radiotgrabbing.anagorny.com
-    depends_on:
-      - nginx-proxy
-      - letsencrypt
+        JAR_FILE: ./*radiot2telegram-*.jar
+        ENTRY_POINT: ./entry_point.sh
+    container_name: radiot2telegram.anagorny.com
     volumes:
       - /tmp/:/tmp/
-    environment:
-      - VIRTUAL_PORT=3000
-      - VIRTUAL_HOST=radiotgrabbing.anagorny.com
-      - LETSENCRYPT_HOST=radiotgrabbing.anagorny.com
-      - LETSENCRYPT_EMAIL=admin@anagorny.com
-      - TG_CHANNEL_ID=<CHANGE ME>
-      - TG_BOT_TOKEN=<CHANGE ME>
-      - TG_BOT_NAME=<CHANGE ME>
-      - FFMPEG_WORK_DIR=/tmp/
-      - FFMPEG_BIN_PATH=/usr/bin/ffmpeg
-      - FFPROBE_BIN_PATH=/usr/bin/ffprobe
-    networks:
-      - proxy_net
+    env_file:
+      - ENV_INIT.env
