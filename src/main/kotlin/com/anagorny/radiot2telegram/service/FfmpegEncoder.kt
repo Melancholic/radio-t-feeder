@@ -17,7 +17,7 @@ import java.util.concurrent.TimeUnit
 
 @Component
 class FfmpegEncoder {
-    private val logger = LoggerFactory.getLogger(Feeder::class.java)
+    private val logger = LoggerFactory.getLogger(FfmpegEncoder::class.java)
 
     @Value("\${radio_t_feeder.ffmpeg.bin.path}")
     private lateinit var ffmpegSrc: String

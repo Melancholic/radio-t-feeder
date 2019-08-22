@@ -1,6 +1,7 @@
 package com.anagorny.radiot2telegram.service
 
 import com.anagorny.radiot2telegram.model.MetaInfoContainer
+import org.quartz.Scheduler
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.CommandLineRunner
@@ -16,27 +17,44 @@ class ConsoleAppService : CommandLineRunner {
 
     private val logger = LoggerFactory.getLogger(CommandLineRunner::class.java)
 
+
     @Autowired
     lateinit var applicationContext: ApplicationContext
 
     @Autowired
-    lateinit var feeder: Feeder
+    lateinit var archiveFeederService: ArchiveFeederService
 
     @Autowired
     lateinit var metaInfoContainer: MetaInfoContainer
 
+    @Autowired
+    lateinit var mainFeedFetcherScheduler: Scheduler
+
     override fun run(vararg args: String?) {
         logger.info("Console app started with args: ${args.joinToString(", ")}")
 
-        try {
-            feeder.archiveProcessing()
-        } catch (e: Exception) {
-            logger.error("Error while archive processing", e)
-            closeApp(COMMON_ERR_EXIT_CODE)
-        } finally {
-            metaInfoContainer.commit()
+        while (!archiveFeederService.archiveIsSynced()) {
+            try {
+                logger.error("TRUE")
+                archiveFeederService.archiveProcessing()
+            } catch (e: Exception) {
+                logger.error("Error while archive processing", e)
+//                    closeApp(COMMON_ERR_EXIT_CODE)
+            } finally {
+                metaInfoContainer.commit()
+            }
         }
-        closeApp()
+
+        logger.info("Archive feed has been synced, start scheduler for MainFeedFetcher...")
+
+
+        try {
+            mainFeedFetcherScheduler.start()
+            logger.info("Scheduler for MainFeedFetcher has been started")
+        } catch (e: Exception) {
+            logger.error("Error while starting MainFeedFetcher scheduler", e)
+        }
+
     }
 
 

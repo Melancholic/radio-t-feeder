@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.ComponentScan
 import org.springframework.context.annotation.Configuration
+import org.springframework.context.annotation.Import
 import org.springframework.core.task.AsyncListenableTaskExecutor
 import org.springframework.scheduling.annotation.EnableScheduling
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor
@@ -14,6 +15,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor
 @Configuration
 @ComponentScan("com.anagorny.radiot2telegram")
 @EnableScheduling
+@Import(JobConfig::class)
 open class SpringContext {
 
     @Value("\${radio_t_feeder.parallel.coresize}")
@@ -40,7 +42,6 @@ open class SpringContext {
 
     @Bean
     fun metaInfoContainer(jsonMapper: ObjectMapper) = MetaInfoContainer(metaDataSrc, jsonMapper)
-
 
 
 }
