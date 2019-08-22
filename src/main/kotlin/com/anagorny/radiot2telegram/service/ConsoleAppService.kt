@@ -35,7 +35,7 @@ class ConsoleAppService : CommandLineRunner {
 
         while (!archiveFeederService.archiveIsSynced()) {
             try {
-                logger.error("TRUE")
+                logger.info("Archive feed need synced...")
                 archiveFeederService.archiveProcessing()
             } catch (e: Exception) {
                 logger.error("Error while archive processing", e)

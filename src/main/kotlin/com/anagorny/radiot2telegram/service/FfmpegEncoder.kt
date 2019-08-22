@@ -41,6 +41,17 @@ class FfmpegEncoder {
     @Value("\${radio_t_feeder.download.read.timeout}")
     private var readTimeout = 60000
 
+    @Value("\${radio_t_feeder.ffmpeg.mp3.bitrate}")
+    private var mp3Bitrate: Long = 32L // at 32 kbit/s
+
+
+    @Value("\${radio_t_feeder.ffmpeg.mp3.channels}")
+    private var mp3Channels = 1 //Mono
+
+
+    @Value("\${radio_t_feeder.ffmpeg.mp3.rate}")
+    private var mp3Rate = 48_000 // at 48KHz
+
 
     fun downloadAndCompressMp3(feedItem: FeedItem): File {
         feedItem.audioUrl ?: feedItem.audioUrlAlter
@@ -73,7 +84,7 @@ class FfmpegEncoder {
         val srcFilePath = downloadedFile.absolutePath
 
         logger.info("Source(no-compress) file downloaded to $srcFilePath...")
-        val outFileName = fileName.replace(".mp3", "-32kbps.mp3")
+        val outFileName = fileName.replace(".mp3", "-${mp3Bitrate}kbps.mp3")
         val outFilePath = "$workDir/$outFileName"
         compressMp3(srcFilePath, outFilePath)
         logger.info("Compressed file saved to $outFilePath.")
@@ -107,10 +118,10 @@ class FfmpegEncoder {
                 .setInput(srcPath)
                 .overrideOutputFiles(true)
                 .addOutput(outPath)
-                .setAudioChannels(1)         // Mono audio
-                .setAudioCodec("mp3")        // using the aac codec
-                .setAudioSampleRate(48_000)  // at 48KHz
-                .setAudioBitRate(32768)      // at 32 kbit/s
+                .setAudioChannels(mp3Channels)
+                .setAudioCodec("mp3")
+                .setAudioSampleRate(mp3Rate)
+                .setAudioBitRate(mp3Bitrate * 1024)
                 .done()
         val executor = FFmpegExecutor(ffmpeg, ffprobe)
         executor.createJob(builder).run()
