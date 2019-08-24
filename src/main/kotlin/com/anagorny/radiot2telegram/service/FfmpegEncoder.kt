@@ -1,13 +1,13 @@
 package com.anagorny.radiot2telegram.service
 
 import com.anagorny.radiot2telegram.model.FeedItem
-import net.bramp.ffmpeg.FFmpeg
 import net.bramp.ffmpeg.FFmpegExecutor
 import net.bramp.ffmpeg.FFprobe
 import net.bramp.ffmpeg.builder.FFmpegBuilder
 import org.apache.commons.io.FileUtils
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import java.io.File
@@ -19,11 +19,11 @@ import java.util.concurrent.TimeUnit
 class FfmpegEncoder {
     private val logger = LoggerFactory.getLogger(FfmpegEncoder::class.java)
 
-    @Value("\${radio_t_feeder.ffmpeg.bin.path}")
-    private lateinit var ffmpegSrc: String
+    @Autowired
+    lateinit var ffmpegTaskExecutor: FFmpegExecutor
 
-    @Value("\${radio_t_feeder.ffmpeg.ffprobe.bin.path}")
-    private lateinit var ffprobeSrc: String
+    @Autowired
+    lateinit var ffprobe: FFprobe
 
     @Value("\${radio_t_feeder.ffmpeg.work.dir}")
     private lateinit var workDir: String
@@ -52,8 +52,11 @@ class FfmpegEncoder {
     @Value("\${radio_t_feeder.ffmpeg.mp3.rate}")
     private var mp3Rate = 48_000 // at 48KHz
 
+    @Value("\${radio_t_feeder.telegram.file.limit_in_bytes}")
+    private var fileLimitBytes = 50000000 // ~ 47MB
 
-    fun downloadAndCompressMp3(feedItem: FeedItem): File {
+
+    fun downloadAndCompressMp3(feedItem: FeedItem): String {
         feedItem.audioUrl ?: feedItem.audioUrlAlter
         ?: throw RuntimeException("Cannot download audio file for podcast '${feedItem.title}' because all audio url is null")
 
@@ -80,16 +83,12 @@ class FfmpegEncoder {
             throw RuntimeException("Cannot download audio file for podcast '${feedItem.title}' because cant read file (downloaded file is null)")
         }
 
-        val fileName = downloadedFile.name
         val srcFilePath = downloadedFile.absolutePath
 
         logger.info("Source(no-compress) file downloaded to $srcFilePath...")
-        val outFileName = fileName.replace(".mp3", "-${mp3Bitrate}kbps.mp3")
-        val outFilePath = "$workDir/$outFileName"
-        compressMp3(srcFilePath, outFilePath)
-        logger.info("Compressed file saved to $outFilePath.")
-        removeFile(File(srcFilePath), logger)
-        return File(outFilePath)
+        val outFilePath = compressMp3(srcFilePath)
+        if (srcFilePath != outFilePath) removeFile(File(srcFilePath), logger)
+        return outFilePath
     }
 
     fun downloadMp3(fileUrl: String): File? {
@@ -110,21 +109,40 @@ class FfmpegEncoder {
         }
     }
 
-    fun compressMp3(srcPath: String, outPath: String) {
-        val ffmpeg = FFmpeg(ffmpegSrc)
-        val ffprobe = FFprobe(ffprobeSrc)
+    fun compressMp3(srcPath: String): String {
 
-        val builder = FFmpegBuilder()
-                .setInput(srcPath)
-                .overrideOutputFiles(true)
-                .addOutput(outPath)
-                .setAudioChannels(mp3Channels)
-                .setAudioCodec("mp3")
-                .setAudioSampleRate(mp3Rate)
-                .setAudioBitRate(mp3Bitrate * 1024)
-                .done()
-        val executor = FFmpegExecutor(ffmpeg, ffprobe)
-        executor.createJob(builder).run()
+        val srcFfprobeResult = ffprobe.probe(srcPath).format
+
+        val origBitRate = srcFfprobeResult.bit_rate
+        val origFileSize = srcFfprobeResult.size
+
+        if (origFileSize > fileLimitBytes) {
+            val rate = ((fileLimitBytes / 1000) * 1000.0) / origFileSize
+            val newBitRate = (origBitRate * rate / 1000).toLong() * 1000
+
+            logger.info("File '$srcPath' to many big, using compression with rate=$rate")
+            val outFilePath = srcPath.replace(".mp3", "-${newBitRate / 1000}kbps.mp3")
+
+            val builder = FFmpegBuilder()
+                    .setInput(srcPath)
+                    .overrideOutputFiles(true)
+                    .addOutput(outFilePath)
+                    .setAudioCodec("mp3")
+                    .setAudioBitRate(newBitRate)
+                    .done()
+            ffmpegTaskExecutor.createJob(builder).run()
+
+            val compressFfprobeResult = ffprobe.probe(outFilePath).format
+
+            val compressBitRate = compressFfprobeResult.bit_rate
+            val compressFileSize = compressFfprobeResult.size
+
+            logger.info("Use compressed file $outFilePath with size=${compressFileSize / 1024 / 1024}MB and bitrate=$compressBitRate")
+            return outFilePath
+        } else {
+            logger.info("Use original file $srcPath with size=${origFileSize / 1024 / 1024}MB and bitrate=$origBitRate")
+            return srcPath
+        }
     }
 
 }

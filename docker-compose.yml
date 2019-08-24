@@ -9,5 +9,6 @@ services:
     container_name: radiot2telegram.anagorny.com
     volumes:
       - /tmp/:/tmp/
+      - /var/radiot2telegram/:/var/radiot2telegram/
     env_file:
       - ENV_INIT.env

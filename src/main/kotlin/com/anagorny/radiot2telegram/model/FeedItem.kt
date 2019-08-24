@@ -1,9 +1,8 @@
 package com.anagorny.radiot2telegram.model
 
-import java.io.File
 import java.util.*
 
-data class FeedItemWithFile (val item: FeedItem, var file: File? = null)
+class FeedItemWithFile(val item: FeedItem, var filePath: String)
 
 data class FeedItem (
         val title: String,
