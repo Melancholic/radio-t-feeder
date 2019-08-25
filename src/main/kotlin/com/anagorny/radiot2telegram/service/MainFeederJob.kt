@@ -1,5 +1,6 @@
 package com.anagorny.radiot2telegram.service
 
+import org.quartz.CronTrigger
 import org.quartz.DisallowConcurrentExecution
 import org.quartz.Job
 import org.quartz.JobExecutionContext
@@ -16,7 +17,7 @@ class MainFeederJob : Job {
     private lateinit var mainFeederService: MainFeederService
 
     override fun execute(context: JobExecutionContext) {
-        logger.info("MainFeederJob started")
+        logger.info("MainFeederJob started by trigger ${context.trigger.key.name} (${(context.trigger as CronTrigger).cronExpression})")
         mainFeederService.readRssFeed()
         logger.info("MainFeederJob finished, next call at over ${context.nextFireTime}")
     }

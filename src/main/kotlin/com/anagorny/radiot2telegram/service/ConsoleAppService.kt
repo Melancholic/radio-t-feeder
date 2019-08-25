@@ -1,6 +1,7 @@
 package com.anagorny.radiot2telegram.service
 
 import com.anagorny.radiot2telegram.model.MetaInfoContainer
+import org.quartz.JobKey
 import org.quartz.Scheduler
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -30,6 +31,9 @@ class ConsoleAppService : CommandLineRunner {
     @Autowired
     lateinit var mainFeedFetcherScheduler: Scheduler
 
+    @Autowired
+    lateinit var mainRssFeedJobKey: JobKey
+
     override fun run(vararg args: String?) {
         logger.info("Console app started with args: ${args.joinToString(", ")}")
 
@@ -50,7 +54,10 @@ class ConsoleAppService : CommandLineRunner {
 
         try {
             mainFeedFetcherScheduler.start()
-            logger.info("Scheduler for MainFeedFetcher has been started")
+            val nextFireTiem = mainFeedFetcherScheduler.getTriggersOfJob(mainRssFeedJobKey).asSequence()
+                    .map { it.key.name to it.nextFireTime }
+                    .minBy { it.second }
+            logger.info("Scheduler for MainFeedFetcher has been started, next fire time = '${nextFireTiem?.second}' by trigger ='${nextFireTiem?.first}'")
         } catch (e: Exception) {
             logger.error("Error while starting MainFeedFetcher scheduler", e)
         }
