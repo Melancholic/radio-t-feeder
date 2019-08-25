@@ -7,7 +7,7 @@ fun parseDescription(descriptionBody: String, sourceUrl: String = ""): String {
     var result = liTags.asSequence()
             .map {
                 return@map it.replace("<li>", "")
-                        .replace("</li>", ";")
+                        .replace("</li>", "")
             }
             .joinToString("\n")
 
