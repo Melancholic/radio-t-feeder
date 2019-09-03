@@ -9,8 +9,8 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.anagorny</groupId>
-    <artifactId>com.anagorny.radiot2telegram</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <artifactId>radiot2telegram</artifactId>
+    <version>1.0.0</version>
     <name>Radio-T to Telegram</name>
     <description>Radio-T feed in Telegram</description>
     <packaging>jar</packaging>
