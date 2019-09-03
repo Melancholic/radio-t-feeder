@@ -11,4 +11,4 @@ services:
       - /tmp/:/tmp/
       - /var/radiot2telegram/:/var/radiot2telegram/
     env_file:
-      - ENV_INIT.env
+      - ./credentials/ENV_INIT.env

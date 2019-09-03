@@ -1,0 +1,14 @@
+version: "2"
+services:
+  radiotgrabbing:
+    build:
+      context: ./
+      args:
+        JAR_FILE: ./*radiot2telegram-*.jar
+        ENTRY_POINT: ./entry_point.sh
+    container_name: radiot2telegram.anagorny.com
+    volumes:
+      - /tmp/radiot2telegram-PROD:/tmp/
+      - /var/radiot2telegram-PROD/:/var/radiot2telegram/
+    env_file:
+      - ./credentials/ENV_INIT_PROD.env

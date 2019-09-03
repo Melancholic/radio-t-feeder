@@ -15,6 +15,11 @@
     <description>Radio-T feed in Telegram</description>
     <packaging>jar</packaging>
     <properties>
+        <deploy.path>${project.basedir}/deploy/</deploy.path>
+        <deploy.common.path>${deploy.path}/common/</deploy.common.path>
+        <deploy.prod.path>${deploy.path}/production/</deploy.prod.path>
+        <deploy.snapshot.path>${deploy.path}/snapshot/</deploy.snapshot.path>
+
         <java.version>1.8</java.version>
         <kotlin.version>1.2.71</kotlin.version>
         <maven.deploy.skip>true</maven.deploy.skip>
@@ -146,6 +151,7 @@
                 <configuration>
                     <descriptors>
                         <descriptor>zip.xml</descriptor>
+                        <descriptor>zip-production.xml</descriptor>
                     </descriptors>
                     <tarLongFileMode>posix</tarLongFileMode>
                 </configuration>

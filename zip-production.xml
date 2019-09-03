@@ -1,7 +1,7 @@
 <assembly xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2"
           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
           xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2 http://maven.apache.org/xsd/assembly-1.1.2.xsd">
-    <id>snapshot</id>
+    <id>prod</id>
     <includeBaseDirectory>true</includeBaseDirectory>
 
     <formats>
@@ -21,11 +21,11 @@
             <outputDirectory>/</outputDirectory>
         </file>
         <file>
-            <source>${deploy.snapshot.path}/docker-compose.yml</source>
+            <source>${deploy.prod.path}/docker-compose.yml</source>
             <outputDirectory>/</outputDirectory>
         </file>
         <file>
-            <source>${deploy.snapshot.path}/ENV_INIT.env</source>
+            <source>${deploy.prod.path}/ENV_INIT_PROD.env</source>
             <outputDirectory>/credentials/</outputDirectory>
         </file>
     </files>
