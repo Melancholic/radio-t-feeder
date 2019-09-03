@@ -22,10 +22,6 @@
             <outputDirectory>/</outputDirectory>
         </file>
         <file>
-            <source>${project.basedir}/ENV_INIT.sh</source>
-            <outputDirectory>/</outputDirectory>
-        </file>
-        <file>
             <source>${project.basedir}/ENV_INIT.env</source>
             <outputDirectory>/</outputDirectory>
         </file>

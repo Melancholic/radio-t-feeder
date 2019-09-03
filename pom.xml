@@ -19,6 +19,7 @@
         <kotlin.version>1.2.71</kotlin.version>
         <maven.deploy.skip>true</maven.deploy.skip>
         <quartz.version>2.3.0</quartz.version>
+        <owasp.version>20190610.1</owasp.version>
     </properties>
 
     <dependencies>
@@ -98,6 +99,16 @@
             <groupId>org.quartz-scheduler</groupId>
             <artifactId>quartz-jobs</artifactId>
             <version>${quartz.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.googlecode.owasp-java-html-sanitizer</groupId>
+            <artifactId>owasp-java-html-sanitizer</artifactId>
+            <version>${owasp.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-web</artifactId>
         </dependency>
 
     </dependencies>

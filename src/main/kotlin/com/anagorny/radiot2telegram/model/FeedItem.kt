@@ -4,7 +4,7 @@ import java.util.*
 
 class FeedItemWithFile(val item: FeedItem, var filePath: String)
 
-data class FeedItem (
+data class FeedItem(
         val title: String,
         val authors: String,
         val audioUrl: String?,
@@ -14,7 +14,8 @@ data class FeedItem (
         val descriptionType: String,
         val podcastUrl: String,
         val publishedDate: Date,
-        val thumbUrl: String?
+        val thumbUrl: String?,
+        val hashtags: Set<String> = emptySet()
 ) {
     var tgMessageId: Int? = null
     var tgFileId: String? = null

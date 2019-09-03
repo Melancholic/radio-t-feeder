@@ -1,5 +1,7 @@
 package com.anagorny.radiot2telegram.service
 
+import com.anagorny.radiot2telegram.helpers.parseAudioUrl
+import com.anagorny.radiot2telegram.helpers.parseDescription
 import com.anagorny.radiot2telegram.model.FeedItem
 import com.anagorny.radiot2telegram.model.FeedItemWithFile
 import com.anagorny.radiot2telegram.model.MetaInfoContainer
@@ -21,6 +23,9 @@ abstract class AbstractFeederService {
     @Autowired
     protected lateinit var metaInfoContainer: MetaInfoContainer
 
+    @Autowired
+    protected lateinit var hashTagsSuggestionService: HashTagsSuggestionService
+
     abstract val logger: Logger
 
     protected fun getMostRecentNews(feedUrl: String): List<SyndEntry> {
@@ -38,20 +43,33 @@ abstract class AbstractFeederService {
     }
 
     protected fun buildFeedItem(entry: SyndEntry): FeedItem {
-        val description = parseDescription(entry.description?.value ?: "", entry.uri)
+        var descriptionSB = StringBuilder(parseDescription(entry.description?.value
+                ?: "", entry.uri))
         val audioUrlAlter = entry.enclosures.firstOrNull()?.url
         val audioUrl = parseAudioUrl(entry.description?.value ?: "") ?: audioUrlAlter
+
+
+        val (hashtags, hashtagsStr) = hashTagsSuggestionService.getHashtagsFromDescription(entry.description.value
+                ?: "")
+
+        if (hashtagsStr.isNotEmpty()) {
+            descriptionSB.append("\n")
+                    .append("\n")
+                    .append(hashtagsStr)
+        }
+
         return FeedItem(
                 title = entry.title,
                 authors = entry.authors.joinToString { ", " },
                 audioType = entry.enclosures.firstOrNull()?.type ?: "",
                 audioUrlAlter = audioUrlAlter,
                 audioUrl = audioUrl,
-                description = description,
+                description = descriptionSB.toString(),
                 descriptionType = entry.description?.type ?: "",
                 podcastUrl = entry.uri,
                 publishedDate = entry.publishedDate,
-                thumbUrl = entry.foreignMarkup?.first { x -> x.name == "image" }?.attributes?.first()?.value
+                thumbUrl = entry.foreignMarkup?.first { x -> x.name == "image" }?.attributes?.first()?.value,
+                hashtags = hashtags
         )
     }
 
