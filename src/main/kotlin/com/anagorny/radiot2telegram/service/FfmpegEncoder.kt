@@ -118,13 +118,13 @@ class FfmpegEncoder {
     }
 
     fun fetchMetaData(srcFile: File): AudioMetaInfo {
-        val srcFfprobeResult = ffprobe.probe(srcFile.absolutePath).format
+        val srcFfprobeResult = ffprobe.probe(srcFile.absolutePath)?.format
         return AudioMetaInfo(
-                title = srcFfprobeResult.tags["title"],
-                artist = srcFfprobeResult.tags["artist"],
-                album = srcFfprobeResult.tags["album"],
-                genre = srcFfprobeResult.tags["genre"],
-                duration = srcFfprobeResult.duration.toInt()
+                title = srcFfprobeResult?.tags?.get("title"),
+                artist = srcFfprobeResult?.tags?.get("artist"),
+                album = srcFfprobeResult?.tags?.get("album"),
+                genre = srcFfprobeResult?.tags?.get("genre"),
+                duration = srcFfprobeResult?.duration?.toInt() ?: 0
         )
     }
 
