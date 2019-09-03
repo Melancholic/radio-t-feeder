@@ -1,6 +1,6 @@
 package com.anagorny.radiot2telegram.service
 
-import com.anagorny.radiot2telegram.model.FeedItem
+import com.anagorny.radiot2telegram.model.FeedItemWithFile
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
@@ -54,17 +54,26 @@ class TelegramBot : TelegramLongPollingBot() {
         return tgBotToken
     }
 
-    fun sendAudio(file: File, feed: FeedItem) : Message? {
-        // Create send method
+    private fun loadFile(filePath: String): File {
+        return try {
+            File(filePath)
+        } catch (e: Exception) {
+            logger.error("Cant read file '$filePath' fo sending", e)
+            throw e
+        }
+    }
+
+    fun sendAudio(feedItemWithFile: FeedItemWithFile): Message? {
+        val (feed, filePath, audioMetaDataInfo) = feedItemWithFile
+        val file = loadFile(filePath)
         val sendAudioRequest = SendAudio()
-        // Set destination chat id
         sendAudioRequest.chatId = "@$tgСhannelIdentifier"
         sendAudioRequest.caption = feed.description
         sendAudioRequest.parseMode = "HTML"
         sendAudioRequest.setAudio(file)
-        //TODO meta from audiofile
-        sendAudioRequest.performer = "Umputun, Bobuk, Gray, Ksenks"
+        sendAudioRequest.performer = audioMetaDataInfo.artist ?: "Umputun, Bobuk, Gray, Ksenks"
         sendAudioRequest.title = feed.title
+        sendAudioRequest.duration = audioMetaDataInfo.duration
 
         if (!feed.thumbUrl.isNullOrBlank()) {
             try {

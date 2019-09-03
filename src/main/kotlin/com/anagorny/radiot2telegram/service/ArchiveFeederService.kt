@@ -1,12 +1,12 @@
 package com.anagorny.radiot2telegram.service
 
+import com.anagorny.radiot2telegram.helpers.removeFile
 import com.anagorny.radiot2telegram.model.FeedItemWithFile
 import com.rometools.rome.feed.synd.SyndEntry
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
-import java.io.File
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Future
@@ -54,18 +54,10 @@ class ArchiveFeederService : AbstractFeederService() {
                 for (offset in futuresWithDownloaded.keys().asSequence().sorted()) {
                     val future = futuresWithDownloaded.getValue(offset)
                     val feedWithFile = future.get()
-                    val feed = feedWithFile.item
-
-                    lateinit var file: File
-                    try {
-                        file = File(feedWithFile.filePath)
-                    } catch (e: Exception) {
-                        logger.error("Cant read file '${feedWithFile.filePath}' fo sending", e)
-                        throw e
-                    }
+                    val (feed, filePath, _) = feedWithFile
 
                     try {
-                        val message = telegramBot.sendAudio(file, feed)
+                        val message = telegramBot.sendAudio(feedWithFile)
                         if (message == null) {
                             logger.error("Message '${feed.title}' cant sended to Telegram (response is null!)")
                             metaInfoContainer.appendToEnd(feed)
@@ -79,7 +71,7 @@ class ArchiveFeederService : AbstractFeederService() {
                     } catch (e: Exception) {
                         throw e
                     } finally {
-                        removeFile(file, logger)
+                        removeFile(filePath, logger)
                     }
                 }
                 logger.info("Group ${groupNum + 1}/${groupedEntries.size} has been processed on ${(System.currentTimeMillis() - groupStartDate) / 1000 / 60.0} minutes")

@@ -26,19 +26,19 @@ class HashTagsSuggestionService {
     @Value("\${radio_t_feeder.hashtags.suggestion.api.url}")
     private lateinit var apiUrl: String
 
-    fun getHashtagsFromDescription(description: String): HashTagsWithStringValue {
+    fun getHashtagsFromDescription(title: String, description: String): HashTagsWithStringValue {
 
         if (!suggestionEnabled) {
-            logger.info("HashtagsSuggestion is disabled, skipping...")
+            logger.warn("HashtagsSuggestion is disabled, skipping hashtags fetching for '$title'...")
             return HashTagsWithStringValue()
         }
 
-        logger.info("HashtagsSuggestion running...")
+        logger.info("HashtagsSuggestion for '$title' running...")
 
         val sanitizedDescription = rawDescription(description)
 
         if (sanitizedDescription.isNullOrEmpty()) {
-            logger.info("HashtagsSuggestion is impossible, because source content has empty, skipping...")
+            logger.warn("HashtagsSuggestion is impossible, because source content has empty, skipping hashtags fetching for '$title'...")
             return HashTagsWithStringValue()
         }
 
@@ -47,13 +47,18 @@ class HashTagsSuggestionService {
                 .queryParam("text", sanitizedDescription)
                 .build()
 
+        return try {
+            val hashTagContainer = RestTemplate().getForObject(uriBuilder.toUriString(), HashTagContainer::class.java)
 
-        val hashTagContainer = RestTemplate().getForObject(uriBuilder.toUriString(), HashTagContainer::class.java)
+            logger.info("HashtagsSuggestion returned ${hashTagContainer?.data?.count()
+                    ?: 0} different hashtags for '$title'")
+            val hashtags = hashTagContainer?.take(hashtagsCount) ?: emptySet()
 
-        logger.info("HashtagsSuggestion returned ${hashTagContainer?.data?.count() ?: 0} different hashtags")
-        val hashtags = hashTagContainer?.take(hashtagsCount) ?: emptySet()
-
-        return HashTagsWithStringValue(hashtags, hashtags.asSequence().map { "#$it" }.joinToString(", "))
+            HashTagsWithStringValue(hashtags, hashtags.asSequence().map { "#$it" }.joinToString(", "))
+        } catch (e: Exception) {
+            logger.warn("Cant fetch hashtags suggestions for '$title', skipping...", e)
+            HashTagsWithStringValue()
+        }
     }
 
 }

@@ -1,11 +1,13 @@
 package com.anagorny.radiot2telegram.service
 
+import com.anagorny.radiot2telegram.helpers.removeFile
+import com.anagorny.radiot2telegram.model.AudioMetaInfo
 import com.anagorny.radiot2telegram.model.FeedItem
+import com.anagorny.radiot2telegram.model.FeedItemWithFile
 import net.bramp.ffmpeg.FFmpegExecutor
 import net.bramp.ffmpeg.FFprobe
 import net.bramp.ffmpeg.builder.FFmpegBuilder
 import org.apache.commons.io.FileUtils
-import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
@@ -56,7 +58,7 @@ class FfmpegEncoder {
     private var fileLimitBytes = 50000000 // ~ 47MB
 
 
-    fun downloadAndCompressMp3(feedItem: FeedItem): String {
+    fun downloadAndCompressMp3(feedItem: FeedItem): FeedItemWithFile {
         feedItem.audioUrl ?: feedItem.audioUrlAlter
         ?: throw RuntimeException("Cannot download audio file for podcast '${feedItem.title}' because all audio url is null")
 
@@ -84,11 +86,17 @@ class FfmpegEncoder {
         }
 
         val srcFilePath = downloadedFile.absolutePath
-
         logger.info("Source(no-compress) file downloaded to $srcFilePath...")
+
+        val srcMetaInfo = fetchMetaData(downloadedFile)
+        logger.info("Metadata for '$srcFilePath' successfully fetching.")
+
         val outFilePath = compressMp3(srcFilePath)
-        if (srcFilePath != outFilePath) removeFile(File(srcFilePath), logger)
-        return outFilePath
+        if (srcFilePath != outFilePath) {
+            removeFile(File(srcFilePath), logger)
+            logger.info("Source file '$srcFilePath' successfully removed.")
+        }
+        return FeedItemWithFile(feedItem, outFilePath, srcMetaInfo)
     }
 
     fun downloadMp3(fileUrl: String): File? {
@@ -107,6 +115,17 @@ class FfmpegEncoder {
             logger.error("Error while download file'$fileUrl'", e)
             null
         }
+    }
+
+    fun fetchMetaData(srcFile: File): AudioMetaInfo {
+        val srcFfprobeResult = ffprobe.probe(srcFile.absolutePath).format
+        return AudioMetaInfo(
+                title = srcFfprobeResult.tags["title"],
+                artist = srcFfprobeResult.tags["artist"],
+                album = srcFfprobeResult.tags["album"],
+                genre = srcFfprobeResult.tags["genre"],
+                duration = srcFfprobeResult.duration.toInt()
+        )
     }
 
     fun compressMp3(srcPath: String): String {
@@ -145,17 +164,4 @@ class FfmpegEncoder {
         }
     }
 
-}
-
-fun removeFile(file: File, logger: Logger) {
-    try {
-        val path = file.absolutePath
-        if (file.delete()) {
-            logger.info("File $path deleted successfully")
-        } else {
-            throw Exception("file $path cant be deleted")
-        }
-    } catch (e: Exception) {
-        logger.error("Error while remove file", e)
-    }
 }

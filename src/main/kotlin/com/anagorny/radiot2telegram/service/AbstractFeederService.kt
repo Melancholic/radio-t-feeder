@@ -49,7 +49,7 @@ abstract class AbstractFeederService {
         val audioUrl = parseAudioUrl(entry.description?.value ?: "") ?: audioUrlAlter
 
 
-        val (hashtags, hashtagsStr) = hashTagsSuggestionService.getHashtagsFromDescription(entry.description.value
+        val (hashtags, hashtagsStr) = hashTagsSuggestionService.getHashtagsFromDescription(entry.title, entry.description.value
                 ?: "")
 
         if (hashtagsStr.isNotEmpty()) {
@@ -78,8 +78,8 @@ abstract class AbstractFeederService {
         val startDate = System.currentTimeMillis()
         val feed = buildFeedItem(entry)
         logger.info("Feed '${feed.title}' is builded, downloading...")
-        val filePath = ffmpegEncoder.downloadAndCompressMp3(feed)
+        val feedItemWithFile = ffmpegEncoder.downloadAndCompressMp3(feed)
         logger.info("$current/$total files downloaded and compressed on ${(System.currentTimeMillis() - startDate) / 1000} sec")
-        return@Callable FeedItemWithFile(item = feed, filePath = filePath)
+        return@Callable feedItemWithFile
     })
 }

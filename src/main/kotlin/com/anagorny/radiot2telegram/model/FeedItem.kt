@@ -2,7 +2,15 @@ package com.anagorny.radiot2telegram.model
 
 import java.util.*
 
-class FeedItemWithFile(val item: FeedItem, var filePath: String)
+data class AudioMetaInfo(
+        val title: String? = null,
+        val artist: String? = null,
+        val album: String? = null,
+        val genre: String? = null,
+        val duration: Int = 0
+)
+
+data class FeedItemWithFile(val item: FeedItem, var filePath: String, var metaInfo: AudioMetaInfo = AudioMetaInfo())
 
 data class FeedItem(
         val title: String,

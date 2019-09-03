@@ -1,10 +1,10 @@
 package com.anagorny.radiot2telegram.service
 
+import com.anagorny.radiot2telegram.helpers.removeFile
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
-import java.io.File
 import java.util.concurrent.locks.ReentrantLock
 
 
@@ -42,18 +42,10 @@ class MainFeederService : AbstractFeederService() {
 
             for (future in futuresWithDownloaded) {
                 val feedWithFile = future.get()
-                val feed = feedWithFile.item
-                lateinit var file: File
+                val (feed, filePath, _) = feedWithFile
 
                 try {
-                    file = File(feedWithFile.filePath)
-                } catch (e: Exception) {
-                    logger.error("Cant read file '${feedWithFile.filePath}' fo sending", e)
-                    throw e
-                }
-
-                try {
-                    val message = telegramBot.sendAudio(file, feed)
+                    val message = telegramBot.sendAudio(feedWithFile)
                     if (message == null) {
                         logger.error("Message '${feed.title}' cant sended to Telegram (message is null!)")
                         metaInfoContainer.appendToEnd(feed)
@@ -67,7 +59,7 @@ class MainFeederService : AbstractFeederService() {
                 } catch (e: Exception) {
                     throw e
                 } finally {
-                    removeFile(file, logger)
+                    removeFile(filePath, logger)
                 }
             }
         } finally {
