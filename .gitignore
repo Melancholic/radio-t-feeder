@@ -1,4 +1,4 @@
-*.env
+ENV_INIT*.env
 do-deploy.sh
 
 HELP.md

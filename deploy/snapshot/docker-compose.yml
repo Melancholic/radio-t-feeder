@@ -1,14 +1,16 @@
 version: "2"
 services:
-  radiotgrabbing:
+  radiot2telegram:
+    restart: always
+    container_name: radiot2telegram_snapshot
     build:
       context: ./
       args:
         JAR_FILE: ./*radiot2telegram-*.jar
         ENTRY_POINT: ./entry_point.sh
-    container_name: radiot2telegram.anagorny.com
     volumes:
       - /tmp/:/tmp/
       - /var/radiot2telegram/:/var/radiot2telegram/
     env_file:
+      - ./COMMON_ENV.env
       - ./credentials/ENV_INIT.env
