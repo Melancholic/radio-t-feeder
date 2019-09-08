@@ -10,7 +10,7 @@
     </parent>
     <groupId>com.anagorny</groupId>
     <artifactId>radiot2telegram</artifactId>
-    <version>1.0.0</version>
+    <version>1.1.0</version>
     <name>Radio-T to Telegram</name>
     <description>Radio-T feed in Telegram</description>
     <packaging>jar</packaging>
