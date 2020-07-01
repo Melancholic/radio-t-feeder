@@ -23,7 +23,7 @@
         <java.version>1.8</java.version>
         <kotlin.version>1.2.71</kotlin.version>
         <maven.deploy.skip>true</maven.deploy.skip>
-        <quartz.version>2.3.0</quartz.version>
+        <quartz.version>2.3.2</quartz.version>
         <owasp.version>20190610.1</owasp.version>
     </properties>
 
