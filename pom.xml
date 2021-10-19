@@ -24,7 +24,7 @@
         <kotlin.version>1.2.71</kotlin.version>
         <maven.deploy.skip>true</maven.deploy.skip>
         <quartz.version>2.3.0</quartz.version>
-        <owasp.version>20190610.1</owasp.version>
+        <owasp.version>20211018.1</owasp.version>
     </properties>
 
     <dependencies>
