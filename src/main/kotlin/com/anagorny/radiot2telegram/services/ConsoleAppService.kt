@@ -1,15 +1,13 @@
-package com.anagorny.radiot2telegram.service
+package com.anagorny.radiot2telegram.services
 
 import com.anagorny.radiot2telegram.model.MetaInfoContainer
+import com.anagorny.radiot2telegram.services.impl.ArchiveFeederService
 import org.quartz.JobKey
 import org.quartz.Scheduler
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.CommandLineRunner
-import org.springframework.boot.ExitCodeGenerator
-import org.springframework.boot.SpringApplication
 import org.springframework.context.ApplicationContext
-import org.springframework.context.ConfigurableApplicationContext
 import org.springframework.stereotype.Service
 
 
@@ -39,11 +37,10 @@ class ConsoleAppService : CommandLineRunner {
 
         while (!archiveFeederService.archiveIsSynced()) {
             try {
-                logger.info("Archive feed need synced...")
+                logger.info("Archive feed need to sync...")
                 archiveFeederService.archiveProcessing()
             } catch (e: Exception) {
-                logger.error("Error while archive processing", e)
-//                    closeApp(COMMON_ERR_EXIT_CODE)
+                logger.error("Error while archive feed processing", e)
             } finally {
                 metaInfoContainer.commit()
             }
@@ -55,31 +52,13 @@ class ConsoleAppService : CommandLineRunner {
         try {
             mainFeedFetcherScheduler.start()
             val nextFireTiem = mainFeedFetcherScheduler.getTriggersOfJob(mainRssFeedJobKey).asSequence()
-                    .map { it.key.name to it.nextFireTime }
-                    .minBy { it.second }
+                .map { it.key.name to it.nextFireTime }
+                .minBy { it.second }
             logger.info("Scheduler for MainFeedFetcher has been started, next fire time = '${nextFireTiem?.second}' by trigger ='${nextFireTiem?.first}'")
         } catch (e: Exception) {
             logger.error("Error while starting MainFeedFetcher scheduler", e)
         }
 
-    }
-
-
-    private fun closeApp(exitCode: Int = SUCCESS_EXIT_CODE) {
-        if (exitCode != SUCCESS_EXIT_CODE) {
-            SpringApplication.exit(applicationContext, ExitCodeGenerator {
-                logger.info("Console app has been shutdown with exit code = $exitCode")
-                return@ExitCodeGenerator exitCode
-            })
-        } else {
-            (applicationContext as ConfigurableApplicationContext).close()
-            logger.info("Console app has been closed with exit code = $exitCode")
-        }
-    }
-
-    companion object {
-        const val SUCCESS_EXIT_CODE = 0
-        const val COMMON_ERR_EXIT_CODE = 1
     }
 
 }

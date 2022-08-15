@@ -1,34 +1,25 @@
-package com.anagorny.radiot2telegram.service
+package com.anagorny.radiot2telegram.services.impl
 
+import com.anagorny.radiot2telegram.config.HashTagsSuggestionProperties
 import com.anagorny.radiot2telegram.helpers.rawDescription
 import com.anagorny.radiot2telegram.model.HashTagContainer
 import com.anagorny.radiot2telegram.model.HashTagsWithStringValue
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.web.client.RestTemplate
 import org.springframework.web.util.UriComponentsBuilder
 
 
 @Service
-class HashTagsSuggestionService {
+class HashTagsSuggestionService(
+    private val hashTagsSuggestionProperties: HashTagsSuggestionProperties
+) {
     val logger = LoggerFactory.getLogger(HashTagsSuggestionService::class.java)
 
-    @Value("\${radio_t_feeder.hashtags.suggestion.enabled}")
-    private var suggestionEnabled: Boolean = false
-
-    @Value("\${radio_t_feeder.hashtags.suggestion.count}")
-    private var hashtagsCount: Int = 5
-
-    @Value("\${radio_t_feeder.hashtags.suggestion.api.secret_client_id}")
-    private lateinit var secretClientId: String
-
-    @Value("\${radio_t_feeder.hashtags.suggestion.api.url}")
-    private lateinit var apiUrl: String
 
     fun getHashtagsFromDescription(title: String, description: String): HashTagsWithStringValue {
 
-        if (!suggestionEnabled) {
+        if (!hashTagsSuggestionProperties.enabled) {
             logger.warn("HashtagsSuggestion is disabled, skipping hashtags fetching for '$title'...")
             return HashTagsWithStringValue()
         }
@@ -42,17 +33,19 @@ class HashTagsSuggestionService {
             return HashTagsWithStringValue()
         }
 
-        val uriBuilder = UriComponentsBuilder.fromHttpUrl(apiUrl)
-                .queryParam("client_id", secretClientId)
-                .queryParam("text", sanitizedDescription)
-                .build()
+        val uriBuilder = UriComponentsBuilder.fromHttpUrl(hashTagsSuggestionProperties.api.url)
+            .queryParam("client_id", hashTagsSuggestionProperties.api.token)
+            .queryParam("text", sanitizedDescription).build()
 
         return try {
             val hashTagContainer = RestTemplate().getForObject(uriBuilder.toUriString(), HashTagContainer::class.java)
 
-            logger.info("HashtagsSuggestion returned ${hashTagContainer?.data?.count()
-                    ?: 0} different hashtags for '$title'")
-            val hashtags = hashTagContainer?.take(hashtagsCount) ?: emptySet()
+            logger.info(
+                "HashtagsSuggestion returned ${
+                    hashTagContainer?.data?.count() ?: 0
+                } different hashtags for '$title'"
+            )
+            val hashtags = hashTagContainer?.take(hashTagsSuggestionProperties.count) ?: emptySet()
 
             HashTagsWithStringValue(hashtags, hashtags.asSequence().map { "#$it" }.joinToString(", "))
         } catch (e: Exception) {

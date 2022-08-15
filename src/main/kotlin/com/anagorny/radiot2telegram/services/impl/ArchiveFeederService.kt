@@ -1,11 +1,14 @@
-package com.anagorny.radiot2telegram.service
+package com.anagorny.radiot2telegram.services.impl
 
-import com.anagorny.radiot2telegram.helpers.removeFile
+import com.anagorny.radiot2telegram.config.RssProperties
 import com.anagorny.radiot2telegram.model.FeedItemWithFile
+import com.anagorny.radiot2telegram.model.MetaInfoContainer
+import com.anagorny.radiot2telegram.services.AbstractFeederService
+import com.anagorny.radiot2telegram.services.FfmpegEncoder
+import com.anagorny.radiot2telegram.services.TelegramBot
 import com.rometools.rome.feed.synd.SyndEntry
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.beans.factory.annotation.Value
+import org.springframework.core.task.AsyncListenableTaskExecutor
 import org.springframework.stereotype.Service
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
@@ -14,17 +17,24 @@ import java.util.concurrent.locks.ReentrantLock
 
 
 @Service
-class ArchiveFeederService : AbstractFeederService() {
+class ArchiveFeederService(
+    threadPoolTaskExecutor: AsyncListenableTaskExecutor,
+    ffmpegEncoder: FfmpegEncoder,
+    feedFetcher: FeedFetcher,
+    metaInfoContainer: MetaInfoContainer,
+    hashTagsSuggestionService: HashTagsSuggestionService,
+    telegramBot: TelegramBot,
+    val rssProperties: RssProperties
+
+) : AbstractFeederService(
+    threadPoolTaskExecutor,
+    ffmpegEncoder,
+    feedFetcher,
+    metaInfoContainer,
+    hashTagsSuggestionService,
+    telegramBot
+) {
     override val logger = LoggerFactory.getLogger(ArchiveFeederService::class.java)
-
-    @Autowired
-    lateinit var telegramBot: TelegramBot
-
-    @Value("\${radio_t_feeder.archive.rss.url}")
-    private lateinit var archiveRssUrl: String
-
-    @Value("\${radio_t_feeder.archive.batch_size}")
-    private var batchSize: Int = 5
 
     private val locker = ReentrantLock()
 
@@ -39,9 +49,9 @@ class ArchiveFeederService : AbstractFeederService() {
             logger.info("RSS feed received with $total new entries")
 
             val groupedEntries = entries.asSequence()
-                    .mapIndexed { index, value -> (index to value) }
-                    .chunked(Math.max(batchSize, 1))
-                    .toList()
+                .mapIndexed { index, value -> (index to value) }
+                .chunked(rssProperties.archive.batchSize.coerceAtLeast(1))
+                .toList()
 
             for ((groupNum, group) in groupedEntries.withIndex()) {
                 val futuresWithDownloaded = ConcurrentHashMap<Int, Future<FeedItemWithFile>>()
@@ -53,26 +63,7 @@ class ArchiveFeederService : AbstractFeederService() {
                 }
                 for (offset in futuresWithDownloaded.keys().asSequence().sorted()) {
                     val future = futuresWithDownloaded.getValue(offset)
-                    val feedWithFile = future.get()
-                    val (feed, filePath, _) = feedWithFile
-
-                    try {
-                        val message = telegramBot.sendAudio(feedWithFile)
-                        if (message == null) {
-                            logger.error("Message '${feed.title}' cant sended to Telegram (response is null!)")
-                            metaInfoContainer.appendToEnd(feed)
-                        } else {
-                            logger.info("Message '${feed.title}' successfully sended to Telegram")
-                            feed.tgMessageId = message.messageId
-                            feed.tgFileId = message.audio.fileId
-                            metaInfoContainer.appendToEnd(feed)
-                        }
-                        logger.info("Message '${feed.title}' successfully processed")
-                    } catch (e: Exception) {
-                        throw e
-                    } finally {
-                        removeFile(filePath, logger)
-                    }
+                    doProcessingFeed(future.get())
                 }
                 logger.info("Group ${groupNum + 1}/${groupedEntries.size} has been processed on ${(System.currentTimeMillis() - groupStartDate) / 1000 / 60.0} minutes")
             }
@@ -86,9 +77,9 @@ class ArchiveFeederService : AbstractFeederService() {
 
     private fun getNotSyncedEntries(): Set<SyndEntry> {
         val latestPublishDate = metaInfoContainer.metaInfoEntity.lastPublishedTime ?: Date(0)
-        return getMostRecentNews(archiveRssUrl)
-                .filter { it.publishedDate > latestPublishDate }
-                .toSet()
+        return getMostRecentNews(rssProperties.archive.url)
+            .filter { it.publishedDate > latestPublishDate }
+            .toSet()
     }
 
     fun archiveIsSynced(): Boolean {
