@@ -1,4 +1,4 @@
-package com.anagorny.radiot2telegram.service
+package com.anagorny.radiot2telegram.services.impl
 
 import org.quartz.CronTrigger
 import org.quartz.DisallowConcurrentExecution

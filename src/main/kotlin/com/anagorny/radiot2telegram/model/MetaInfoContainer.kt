@@ -6,7 +6,6 @@ import org.slf4j.LoggerFactory
 import java.io.File
 import java.io.FileInputStream
 import java.util.*
-import kotlin.collections.LinkedHashMap
 
 
 data class MetaInfoEntity(
@@ -20,19 +19,15 @@ data class MetaInfoEntity(
 
 class MetaInfoContainer(srcMetaFile: String, private val mapper: ObjectMapper) {
     private val file: File = File(srcMetaFile)
-    val metaInfoEntity: MetaInfoEntity
-
-    init {
-        metaInfoEntity = if (file.exists()) {
-            try {
-                FileInputStream(file).use { fileStream -> mapper.readValue(fileStream, MetaInfoEntity::class.java) }
-            } catch (e: Exception) {
-                logger.error("Cant read metadata", e)
-                MetaInfoEntity()
-            }
-        } else {
+    val metaInfoEntity: MetaInfoEntity = if (file.exists()) {
+        try {
+            FileInputStream(file).use { fileStream -> mapper.readValue(fileStream, MetaInfoEntity::class.java) }
+        } catch (e: Exception) {
+            logger.error("Cant read metadata", e)
             MetaInfoEntity()
         }
+    } else {
+        MetaInfoEntity()
     }
 
     fun appendToEnd(feed: FeedItem, autoCommit: Boolean = true): Int {

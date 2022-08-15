@@ -1,4 +1,4 @@
-package com.anagorny.radiot2telegram.service
+package com.anagorny.radiot2telegram.services.impl
 
 import com.rometools.rome.feed.synd.SyndFeed
 import com.rometools.rome.io.SyndFeedInput
@@ -15,7 +15,7 @@ class FeedFetcher {
     fun downloadFeed(feedUrl: String): SyndFeed {
         try {
             HttpClients.createMinimal().use { client ->
-                logger.info("downloading $feedUrl")
+                logger.info("Fetching $feedUrl...")
                 val request = HttpGet(feedUrl)
                 client.execute(request).use { response ->
                     response.entity.content.use { stream ->
