@@ -71,8 +71,7 @@ logging:
   level:
     root: INFO
   file:
-    path: ${WORK_DIR}/logs/
-    name: radiot2telegram.log
+    name: ${WORK_DIR}/logs/radiot2telegram.log
   logback:
     rollingpolicy:
       max-history: 5
