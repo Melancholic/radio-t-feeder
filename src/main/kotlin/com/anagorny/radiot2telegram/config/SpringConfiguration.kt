@@ -6,15 +6,24 @@ import com.fasterxml.jackson.module.kotlin.KotlinModule
 import net.bramp.ffmpeg.FFmpeg
 import net.bramp.ffmpeg.FFmpegExecutor
 import net.bramp.ffmpeg.FFprobe
+import org.springframework.boot.web.client.RestTemplateBuilder
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Import
 import org.springframework.core.task.AsyncListenableTaskExecutor
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor
+import org.springframework.web.client.RestTemplate
+
 
 @Configuration
 @Import(JobConfig::class)
 open class SpringConfiguration {
+
+    @Bean
+    fun restTemplate(builder: RestTemplateBuilder): RestTemplate {
+        // Do any additional configuration here
+        return builder.build()
+    }
 
     @Bean
     fun threadPoolTaskExecutor(properties: ConcurrencyProperties): AsyncListenableTaskExecutor {

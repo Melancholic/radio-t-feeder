@@ -12,7 +12,8 @@ import org.springframework.web.util.UriComponentsBuilder
 
 @Service
 class HashTagsSuggestionService(
-    private val hashTagsSuggestionProperties: HashTagsSuggestionProperties
+    private val hashTagsSuggestionProperties: HashTagsSuggestionProperties,
+    private val restTemplate: RestTemplate
 ) {
     val logger = LoggerFactory.getLogger(HashTagsSuggestionService::class.java)
 
@@ -38,7 +39,7 @@ class HashTagsSuggestionService(
             .queryParam("text", sanitizedDescription).build()
 
         return try {
-            val hashTagContainer = RestTemplate().getForObject(uriBuilder.toUriString(), HashTagContainer::class.java)
+            val hashTagContainer = restTemplate.getForObject(uriBuilder.toUriString(), HashTagContainer::class.java)
 
             logger.info(
                 "HashtagsSuggestion returned ${
