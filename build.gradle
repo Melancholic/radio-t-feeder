@@ -1,0 +1,85 @@
+buildscript {
+    ext {
+        kotlin_version = "1.7.10"
+        spring_boot_version = "2.7.2"
+    }
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:$spring_boot_version")
+    }
+}
+
+plugins {
+    id "org.jetbrains.kotlin.jvm" version "$kotlin_version"
+    id "org.jetbrains.kotlin.plugin.spring" version "$kotlin_version"
+    id 'org.springframework.boot' version "$spring_boot_version"
+    id "io.spring.dependency-management" version "1.0.13.RELEASE"
+    id "nebula.release" version "16.0.0"
+}
+
+sourceCompatibility = 11
+targetCompatibility = 11
+
+
+ext {
+    quartz_version = '2.3.2'
+    rome_version = '1.5.0'
+    owasp_version = '20220608.1'
+
+}
+dependencies {
+    implementation "org.springframework.boot:spring-boot-starter-web"
+    implementation "org.springframework.boot:spring-boot-configuration-processor"
+    implementation "org.springframework.retry:spring-retry"
+    implementation "org.springframework:spring-context-support"
+    implementation "org.springframework:spring-aspects"
+    implementation "com.fasterxml.jackson.module:jackson-module-kotlin"
+
+    implementation "org.telegram:telegrambots:6.1.0"
+    implementation "net.bramp.ffmpeg:ffmpeg:0.7.0"
+    implementation "com.rometools:rome:$rome_version"
+    implementation "com.rometools:rome-fetcher:$rome_version"
+    implementation "com.googlecode.owasp-java-html-sanitizer:owasp-java-html-sanitizer:$owasp_version"
+    implementation "org.quartz-scheduler:quartz:$quartz_version"
+    implementation "org.quartz-scheduler:quartz-jobs:$quartz_version"
+
+}
+
+repositories {
+    mavenCentral()
+}
+
+task distrib(type: Zip, dependsOn: bootJar) {
+    def baseName = "${project.name}-${project.version}"
+
+    into("$baseName/") {
+        from('build/libs') {
+            include "${baseName}.jar"
+        }
+        from("deploy/common")
+    }
+
+    def buildType = "snapshot"
+    if (project.version.toString().matches("\\d+\\.\\d+\\.\\d+")) {
+        buildType = "production"
+    }
+
+    into("$baseName/") {
+        from("deploy/$buildType/") {
+            include 'docker-compose.yml'
+        }
+    }
+    into("$baseName/credentials") {
+        from("deploy/$buildType/") {
+            include '*.env'
+        }
+    }
+
+
+    archiveName "${baseName}.zip"
+
+}
+
+build.dependsOn(distrib)

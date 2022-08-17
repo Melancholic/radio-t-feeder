@@ -54,7 +54,7 @@ class ConsoleAppService : CommandLineRunner {
             val nextFireTiem = mainFeedFetcherScheduler.getTriggersOfJob(mainRssFeedJobKey).asSequence()
                 .map { it.key.name to it.nextFireTime }
                 .minBy { it.second }
-            logger.info("Scheduler for MainFeedFetcher has been started, next fire time = '${nextFireTiem?.second}' by trigger ='${nextFireTiem?.first}'")
+            logger.info("Scheduler for MainFeedFetcher has been started, next fire time = '${nextFireTiem.second}' by trigger ='${nextFireTiem.first}'")
         } catch (e: Exception) {
             logger.error("Error while starting MainFeedFetcher scheduler", e)
         }
