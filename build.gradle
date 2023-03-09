@@ -16,7 +16,7 @@ plugins {
     id "org.jetbrains.kotlin.plugin.spring" version "$kotlin_version"
     id 'org.springframework.boot' version "$spring_boot_version"
     id "io.spring.dependency-management" version "1.0.13.RELEASE"
-    id "nebula.release" version "16.0.0"
+    id "nebula.release" version "17.1.0"
 }
 
 sourceCompatibility = 11
