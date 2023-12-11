@@ -27,11 +27,11 @@ class AudioCompressor(
         val origFileSize = srcFfprobeResult.size
 
         if (origFileSize > properties.files.audioMaxSize.toBytes()) {
-            val rate = ((properties.files.audioMaxSize.toBytes() / 1000) * 1000.0) / origFileSize
-            val newBitRate = (origBitRate * rate / 1000).toLong() * 1000
+            val rate = ((properties.files.audioMaxSize.toBytes() / 1024) * 1024.0) / origFileSize
+            val newBitRate = (origBitRate * rate / 1024).toLong() * 1024
 
             logger.info("File '$srcPath' too many big, using compression with rate=$rate")
-            val outFilePath = srcPath.replace(".mp3", "-${newBitRate / 1000}kbps.mp3")
+            val outFilePath = srcPath.replace(".mp3", "-${newBitRate / 1024}kbps.mp3")
 
             val builder = FFmpegBuilder()
                 .setInput(srcPath)
