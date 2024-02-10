@@ -1,7 +1,7 @@
 buildscript {
     ext {
-        kotlin_version = "1.7.20"
-        spring_boot_version = "2.7.5"
+        kotlin_version = "1.8.20"
+        spring_boot_version = "3.2.2"
     }
     repositories {
         mavenCentral()
@@ -15,20 +15,20 @@ plugins {
     id "org.jetbrains.kotlin.jvm" version "$kotlin_version"
     id "org.jetbrains.kotlin.plugin.spring" version "$kotlin_version"
     id 'org.springframework.boot' version "$spring_boot_version"
-    id "io.spring.dependency-management" version "1.0.13.RELEASE"
+    id "io.spring.dependency-management" version "1.1.4"
     id "nebula.release" version "16.0.0"
 }
 
-sourceCompatibility = 11
-targetCompatibility = 11
+sourceCompatibility = 17
+targetCompatibility = 17
 
 
 ext {
     quartz_version = '2.3.2'
-    rome_version = '1.5.0'
+    rome_version = '1.19.0'
     owasp_version = '20220608.1'
-
-}
+    telegrambots_version = '6.9.7.0'
+    }
 dependencies {
     implementation "org.springframework.boot:spring-boot-starter-web"
     implementation "org.springframework.boot:spring-boot-configuration-processor"
@@ -36,15 +36,18 @@ dependencies {
     implementation "org.springframework:spring-context-support"
     implementation "org.springframework:spring-aspects"
     implementation "com.fasterxml.jackson.module:jackson-module-kotlin"
+    implementation 'io.github.microutils:kotlin-logging-jvm:3.0.5'
 
-    implementation "org.telegram:telegrambots:6.1.0"
-    implementation "net.bramp.ffmpeg:ffmpeg:0.7.0"
+    implementation "org.telegram:telegrambots"
+    implementation "org.telegram:telegrambots-spring-boot-starter:$telegrambots_version"
+    implementation "org.telegram:telegrambotsextensions:$telegrambots_version"
+    implementation "net.bramp.ffmpeg:ffmpeg:0.8.0"
     implementation "com.rometools:rome:$rome_version"
     implementation "com.rometools:rome-fetcher:$rome_version"
     implementation "com.googlecode.owasp-java-html-sanitizer:owasp-java-html-sanitizer:$owasp_version"
     implementation "org.quartz-scheduler:quartz:$quartz_version"
     implementation "org.quartz-scheduler:quartz-jobs:$quartz_version"
-
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
 }
 
 repositories {
@@ -78,8 +81,18 @@ task distrib(type: Zip, dependsOn: bootJar) {
     }
 
 
-    archiveName "${baseName}.zip"
+    archiveFileName.set("${baseName}.zip")
 
 }
 
 build.dependsOn(distrib)
+compileKotlin {
+    kotlinOptions {
+        jvmTarget = "17"
+    }
+}
+compileTestKotlin {
+    kotlinOptions {
+        jvmTarget = "17"
+    }
+}

@@ -1,12 +1,11 @@
 package com.anagorny.radiot2telegram.services.impl
 
 import com.anagorny.radiot2telegram.config.TelegramProperties
-import com.anagorny.radiot2telegram.services.FfmpegEncoder
 import com.anagorny.radiot2telegram.services.IAudioCompressor
+import mu.KLogging
 import net.bramp.ffmpeg.FFmpegExecutor
 import net.bramp.ffmpeg.FFprobe
 import net.bramp.ffmpeg.builder.FFmpegBuilder
-import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 
 @Service
@@ -15,9 +14,6 @@ class AudioCompressor(
     private val ffprobe: FFprobe,
     private val properties: TelegramProperties
 ) : IAudioCompressor {
-
-    private val logger = LoggerFactory.getLogger(FfmpegEncoder::class.java)
-
 
     override fun compressAudio(srcPath: String): String {
 
@@ -54,4 +50,6 @@ class AudioCompressor(
             return srcPath
         }
     }
+
+    private companion object : KLogging()
 }

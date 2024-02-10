@@ -5,15 +5,15 @@ import com.anagorny.radiot2telegram.model.MetaInfoContainer
 import com.anagorny.radiot2telegram.services.AbstractFeederService
 import com.anagorny.radiot2telegram.services.FfmpegEncoder
 import com.anagorny.radiot2telegram.services.TelegramBot
-import org.slf4j.LoggerFactory
-import org.springframework.core.task.AsyncListenableTaskExecutor
+import mu.KLogging
+import org.springframework.core.task.AsyncTaskExecutor
 import org.springframework.stereotype.Service
 import java.util.concurrent.locks.ReentrantLock
 
 
 @Service
 class MainFeederService(
-    threadPoolTaskExecutor: AsyncListenableTaskExecutor,
+    threadPoolTaskExecutor: AsyncTaskExecutor,
     ffmpegEncoder: FfmpegEncoder,
     feedFetcher: FeedFetcher,
     metaInfoContainer: MetaInfoContainer,
@@ -28,7 +28,6 @@ class MainFeederService(
     hashTagsSuggestionService,
     telegramBot
 ) {
-    override val logger = LoggerFactory.getLogger(MainFeederService::class.java)
     private val locker = ReentrantLock()
 
     fun readRssFeed() {
@@ -58,5 +57,7 @@ class MainFeederService(
             logger.info("Archive RSS has been processed on ${System.currentTimeMillis() - startDate} ms")
         }
     }
+
+    private companion object : KLogging()
 }
 

@@ -49,11 +49,12 @@ parallel:
 rss:
   #Archive feed params
   archive:
-    url: https://radio-t.com/podcast-archives.rss
+#    url: https://radio-t.com/podcast-archives.rss # It doesn't parse now
+    url: http://feeds.rucast.net/radio-t
     batch-size: ${BATCH_SIZE}
   #Main feed params
   main:
-    url: https://radio-t.com/podcast.rss
+    url: http://feeds.rucast.net/radio-t
     cron:
       - "*/10 * 22-23 ? * SAT *"
       - "*/10 * 0-9 ? * SUN *"

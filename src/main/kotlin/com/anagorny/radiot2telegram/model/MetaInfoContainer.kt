@@ -2,7 +2,7 @@ package com.anagorny.radiot2telegram.model
 
 import com.fasterxml.jackson.core.util.DefaultPrettyPrinter
 import com.fasterxml.jackson.databind.ObjectMapper
-import org.slf4j.LoggerFactory
+import mu.KLogging
 import java.io.File
 import java.io.FileInputStream
 import java.util.*
@@ -48,8 +48,5 @@ class MetaInfoContainer(srcMetaFile: String, private val mapper: ObjectMapper) {
         writer.writeValue(file, metaInfoEntity)
     }
 
-    private companion object {
-        private val logger = LoggerFactory.getLogger(MetaInfoContainer::class.java)
-    }
-
+    private companion object : KLogging()
 }

@@ -3,21 +3,19 @@ package com.anagorny.radiot2telegram.services
 import com.anagorny.radiot2telegram.config.DownloadProperties
 import com.anagorny.radiot2telegram.config.MediaProperties
 import com.anagorny.radiot2telegram.model.FileContainer
+import mu.KLogging
 import org.apache.commons.io.FileUtils
 import org.apache.commons.io.FilenameUtils.*
-import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import java.io.File
+import java.net.URI
 import java.net.URL
 
 @Service
-open class FileDownloader(
+class FileDownloader(
     private val mediaProperties: MediaProperties,
     private val downloadProperties: DownloadProperties,
 ) : IDownloader {
-
-    protected val logger = LoggerFactory.getLogger(FileDownloader::class.java)
-
     override fun download(fileUrl: String, mirror: String?): FileContainer {
         val (file, url) = try {
             doDownload(fileUrl)
@@ -30,8 +28,8 @@ open class FileDownloader(
         return FileContainer(file, baseName, extension)
     }
 
-    protected open fun doDownload(fileUrl: String): Pair<File, URL> {
-        val url = URL(fileUrl)
+    protected fun doDownload(fileUrl: String): Pair<File, URL> {
+        val url = URI(fileUrl).toURL()
         val fileName = getName(url.path)
         val srcFilePath = "${mediaProperties.workDir}/$fileName"
         val file = File(srcFilePath)
@@ -49,4 +47,6 @@ open class FileDownloader(
         }
         return (file to url)
     }
+
+    private companion object : KLogging()
 }

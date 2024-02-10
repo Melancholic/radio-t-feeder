@@ -5,7 +5,7 @@ import com.anagorny.radiot2telegram.model.AudioMetaInfo
 import com.anagorny.radiot2telegram.model.FeedItem
 import com.anagorny.radiot2telegram.model.FeedItemWithFile
 import com.anagorny.radiot2telegram.services.impl.JPGExtensionChecker
-import org.slf4j.LoggerFactory
+import mu.KLogging
 import org.springframework.stereotype.Service
 import java.io.File
 
@@ -19,7 +19,6 @@ class FfmpegEncoder(
     private val jpgExtensionChecker: JPGExtensionChecker,
     private val jpegConverter: IConverter
 ) {
-    private val logger = LoggerFactory.getLogger(FfmpegEncoder::class.java)
 
     fun downloadAndCompressMp3(feedItem: FeedItem): FeedItemWithFile {
         val thumbFilePath = doProcessingThumb(feedItem)
@@ -71,4 +70,6 @@ class FfmpegEncoder(
             }
         }
     }
+
+    private companion object : KLogging()
 }
