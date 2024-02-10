@@ -1,9 +1,9 @@
 package com.anagorny.radiot2telegram.config
 
 import com.anagorny.radiot2telegram.services.impl.MainFeederJob
+import mu.KLogging
 import org.quartz.*
 import org.quartz.impl.StdSchedulerFactory
-import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.ApplicationContext
 import org.springframework.context.annotation.Bean
@@ -15,9 +15,6 @@ import org.springframework.scheduling.quartz.SpringBeanJobFactory
 class JobConfig(
     private val rssProperties: RssProperties
 ) {
-
-    private val logger = LoggerFactory.getLogger(JobConfig::class.java)
-
     @Autowired
     private lateinit var applicationContext: ApplicationContext
 
@@ -79,4 +76,5 @@ class JobConfig(
         return job
     }
 
+    private companion object : KLogging()
 }

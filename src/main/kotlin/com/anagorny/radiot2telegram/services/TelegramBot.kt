@@ -2,7 +2,7 @@ package com.anagorny.radiot2telegram.services
 
 import com.anagorny.radiot2telegram.config.TelegramProperties
 import com.anagorny.radiot2telegram.model.FeedItemWithFile
-import org.slf4j.LoggerFactory
+import mu.KLogging
 import org.springframework.retry.annotation.Backoff
 import org.springframework.retry.annotation.Retryable
 import org.springframework.stereotype.Component
@@ -18,16 +18,13 @@ import java.io.File
 @Component
 class TelegramBot(
     private val telegramProperties: TelegramProperties,
-) : TelegramLongPollingBot() {
-    private val logger = LoggerFactory.getLogger(TelegramBot::class.java)
+) : TelegramLongPollingBot(telegramProperties.bot.token) {
 
     override fun onUpdateReceived(update: Update) {
         TODO()
     }
 
     override fun getBotUsername() = telegramProperties.bot.name
-
-    override fun getBotToken() = telegramProperties.bot.token
 
     private fun loadFile(filePath: String): InputFile {
         return try {
@@ -51,7 +48,7 @@ class TelegramBot(
         sendAudioRequest.duration = audioMetaDataInfo.duration
 
         if (thumbFilePath != null) {
-            sendAudioRequest.thumb = loadFile(thumbFilePath)
+            sendAudioRequest.thumbnail = loadFile(thumbFilePath)
         }
 
         return try {
@@ -73,4 +70,6 @@ class TelegramBot(
     fun doSendMessage(sendAudioRequest: SendAudio): Message {
         return execute(sendAudioRequest) ?: throw TelegramApiException("Message is null!")
     }
+
+    private companion object : KLogging()
 }

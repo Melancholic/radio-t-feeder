@@ -10,23 +10,20 @@ import com.anagorny.radiot2telegram.model.MetaInfoContainer
 import com.anagorny.radiot2telegram.services.impl.FeedFetcher
 import com.anagorny.radiot2telegram.services.impl.HashTagsSuggestionService
 import com.rometools.rome.feed.synd.SyndEntry
-import org.slf4j.Logger
-import org.springframework.core.task.AsyncListenableTaskExecutor
+import mu.KLogging
+import org.springframework.core.task.AsyncTaskExecutor
 import java.util.*
 import java.util.concurrent.Callable
 import java.util.concurrent.Future
 
 abstract class AbstractFeederService(
-    private val threadPoolTaskExecutor: AsyncListenableTaskExecutor,
+    private val threadPoolTaskExecutor: AsyncTaskExecutor,
     private val ffmpegEncoder: FfmpegEncoder,
     private val feedFetcher: FeedFetcher,
     protected val metaInfoContainer: MetaInfoContainer,
     private val hashTagsSuggestionService: HashTagsSuggestionService,
     private val telegramBot: TelegramBot
 ) {
-    abstract val logger: Logger
-
-
     protected fun doProcessingFeed(feedWithFile: FeedItemWithFile) {
         val (feed, audioFilePath, _, thumbFilePath) = feedWithFile
 
@@ -63,7 +60,7 @@ abstract class AbstractFeederService(
         }
     }
 
-    protected fun buildFeedItem(entry: SyndEntry): FeedItem {
+    private fun buildFeedItem(entry: SyndEntry): FeedItem {
         var descriptionSB = StringBuilder(
             parseDescription(
                 entry.description?.value ?: "", entry.uri
@@ -109,7 +106,7 @@ abstract class AbstractFeederService(
             return@Callable feedItemWithFile
         })
 
-    companion object {
+    private companion object : KLogging() {
         const val DEFAULT_AUTHORS = "Umputun, Bobuk, Gray, Ksenks"
     }
 }

@@ -2,24 +2,16 @@ package com.anagorny.radiot2telegram.services
 
 import com.anagorny.radiot2telegram.model.MetaInfoContainer
 import com.anagorny.radiot2telegram.services.impl.ArchiveFeederService
+import mu.KLogging
 import org.quartz.JobKey
 import org.quartz.Scheduler
-import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.CommandLineRunner
-import org.springframework.context.ApplicationContext
 import org.springframework.stereotype.Service
 
 
 @Service
 class ConsoleAppService : CommandLineRunner {
-
-    private val logger = LoggerFactory.getLogger(CommandLineRunner::class.java)
-
-
-    @Autowired
-    lateinit var applicationContext: ApplicationContext
-
     @Autowired
     lateinit var archiveFeederService: ArchiveFeederService
 
@@ -61,4 +53,5 @@ class ConsoleAppService : CommandLineRunner {
 
     }
 
+    private companion object : KLogging()
 }

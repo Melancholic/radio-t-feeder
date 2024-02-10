@@ -7,8 +7,8 @@ import com.anagorny.radiot2telegram.services.AbstractFeederService
 import com.anagorny.radiot2telegram.services.FfmpegEncoder
 import com.anagorny.radiot2telegram.services.TelegramBot
 import com.rometools.rome.feed.synd.SyndEntry
-import org.slf4j.LoggerFactory
-import org.springframework.core.task.AsyncListenableTaskExecutor
+import mu.KLogging
+import org.springframework.core.task.AsyncTaskExecutor
 import org.springframework.stereotype.Service
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
@@ -18,14 +18,13 @@ import java.util.concurrent.locks.ReentrantLock
 
 @Service
 class ArchiveFeederService(
-    threadPoolTaskExecutor: AsyncListenableTaskExecutor,
+    threadPoolTaskExecutor: AsyncTaskExecutor,
     ffmpegEncoder: FfmpegEncoder,
     feedFetcher: FeedFetcher,
     metaInfoContainer: MetaInfoContainer,
     hashTagsSuggestionService: HashTagsSuggestionService,
     telegramBot: TelegramBot,
     val rssProperties: RssProperties
-
 ) : AbstractFeederService(
     threadPoolTaskExecutor,
     ffmpegEncoder,
@@ -34,8 +33,6 @@ class ArchiveFeederService(
     hashTagsSuggestionService,
     telegramBot
 ) {
-    override val logger = LoggerFactory.getLogger(ArchiveFeederService::class.java)
-
     private val locker = ReentrantLock()
 
     fun archiveProcessing() {
@@ -92,5 +89,6 @@ class ArchiveFeederService(
         }
     }
 
+    private companion object : KLogging()
 }
 
