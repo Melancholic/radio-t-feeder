@@ -14,7 +14,7 @@ telegram:
       max-attempts: 3
       delay: 10000
   files:
-    audio-max-size: 47MB
+    audio-max-size: 45MB
 
 #RiteKit API params
 hashtags:
