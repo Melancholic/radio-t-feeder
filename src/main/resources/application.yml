@@ -2,6 +2,10 @@
 server:
   port: ${PORT:8080}
 
+spring:
+  main:
+    web-application-type: none
+
 #Telegram params
 telegram:
   chat-id: ${TG_CHANNEL_ID}
