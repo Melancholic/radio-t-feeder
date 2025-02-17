@@ -9,7 +9,7 @@ import net.bramp.ffmpeg.builder.FFmpegBuilder
 import org.springframework.stereotype.Service
 import org.springframework.util.unit.DataSize
 import org.springframework.util.unit.DataUnit
-import kotlin.math.floor
+import kotlin.math.ceil
 
 @Service
 class AudioCompressor(
@@ -28,7 +28,7 @@ class AudioCompressor(
 
         if (origFileSize > maxSizeLimit) {
             val rate = maxSizeLimit.toBytes() * 1.0 / origFileSize.toBytes()
-            val newBitRate = floor(origBitRate * rate).toLong()
+            val newBitRate = ceil(origBitRate * rate).toLong()
 
             logger.info("File '$srcPath' too many big (${origFileSize.toMegabytes()}MB), using compression with rate=$rate")
             val outFilePath = srcPath.replace(".mp3", "-${newBitRate / 1024}kbps.mp3")
