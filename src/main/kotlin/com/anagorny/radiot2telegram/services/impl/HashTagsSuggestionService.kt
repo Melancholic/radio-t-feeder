@@ -29,12 +29,12 @@ class HashTagsSuggestionService(
 
         val sanitizedDescription = rawDescription(description)
 
-        if (sanitizedDescription.isNullOrEmpty()) {
-            logger.warn("HashtagsSuggestion is impossible, because source content has empty, skipping hashtags fetching for '$title'...")
+        if (sanitizedDescription.isEmpty()) {
+            logger.warn("HashtagsSuggestion is impossible, because source content is empty, skipping hashtags fetching for '$title'...")
             return HashTagsWithStringValue()
         }
 
-        val uriBuilder = UriComponentsBuilder.fromHttpUrl(hashTagsSuggestionProperties.api.url)
+        val uriBuilder = UriComponentsBuilder.fromUriString(hashTagsSuggestionProperties.api.url)
             .queryParam("client_id", hashTagsSuggestionProperties.api.token)
             .queryParam("text", sanitizedDescription).build()
 

@@ -1,7 +1,7 @@
 buildscript {
     ext {
-        kotlin_version = "1.8.20"
-        spring_boot_version = "3.2.2"
+        kotlin_version = "2.1.10"
+        spring_boot_version = "3.4.2"
     }
     repositories {
         mavenCentral()
@@ -16,7 +16,7 @@ plugins {
     id "org.jetbrains.kotlin.plugin.spring" version "$kotlin_version"
     id 'org.springframework.boot' version "$spring_boot_version"
     id "io.spring.dependency-management" version "1.1.4"
-    id "nebula.release" version "16.0.0"
+    id "nebula.release" version "19.0.10"
 }
 
 sourceCompatibility = 17
