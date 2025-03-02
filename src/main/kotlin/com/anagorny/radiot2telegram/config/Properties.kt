@@ -11,7 +11,8 @@ data class TelegramProperties(
     val chatId: String,
     val bot: BotProperties,
     val sending: SendingProperties,
-    val files: FilesProperties
+    val files: FilesProperties,
+    val serverUrl: String = "https://api.telegram.org/bot"
 ) {
     data class BotProperties(
         val token: String,
@@ -25,7 +26,7 @@ data class TelegramProperties(
 
     data class FilesProperties(
         @DataSizeUnit(DataUnit.MEGABYTES)
-        val audioMaxSize: DataSize
+        val audioMaxSize: DataSize,
     )
 }
 

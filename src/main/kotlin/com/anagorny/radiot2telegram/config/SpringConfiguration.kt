@@ -13,6 +13,7 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.core.task.AsyncTaskExecutor
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor
 import org.springframework.web.client.RestTemplate
+import org.telegram.telegrambots.bots.DefaultBotOptions
 
 
 @Configuration
@@ -55,5 +56,12 @@ class SpringConfiguration {
     @Bean
     fun syndFeedInput() = SyndFeedInput()
 
+    @Bean
+    fun defaultBotOptions(properties: TelegramProperties) : DefaultBotOptions {
+        val options = DefaultBotOptions().apply {
+            baseUrl = properties.serverUrl
+        }
 
+        return options
+    }
 }

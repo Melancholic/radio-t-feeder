@@ -6,6 +6,7 @@ import mu.KLogging
 import org.springframework.retry.annotation.Backoff
 import org.springframework.retry.annotation.Retryable
 import org.springframework.stereotype.Component
+import org.telegram.telegrambots.bots.DefaultBotOptions
 import org.telegram.telegrambots.bots.TelegramLongPollingBot
 import org.telegram.telegrambots.meta.api.methods.send.SendAudio
 import org.telegram.telegrambots.meta.api.objects.InputFile
@@ -18,7 +19,8 @@ import java.io.File
 @Component
 class TelegramBot(
     private val telegramProperties: TelegramProperties,
-) : TelegramLongPollingBot(telegramProperties.bot.token) {
+    options: DefaultBotOptions
+) : TelegramLongPollingBot(options, telegramProperties.bot.token) {
 
     override fun onUpdateReceived(update: Update) {
         TODO()
