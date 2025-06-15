@@ -25,16 +25,28 @@ fun rawDescription(descriptionBody: String): String {
 fun parseDescription(descriptionBody: String, sourceUrl: String = ""): String {
     val liTags = mutableListOf<String>()
     descriptionBody.replace("<li>.+</li>".toRegex()) { liTags.add(("&#10148; ${it.value}")); "" }
-
-    var result = liTags.asSequence()
+    var result = buildString {  }
+    result += if (liTags.isNotEmpty()) {
+        liTags.asSequence()
             .map {
                 return@map it.replace("<li>", "")
-                        .replace("</li>", "")
+                    .replace("</li>", "")
             }
             .joinToString("\n")
+    } else {
+        sanitizeHtmlTags(descriptionBody)
+    }
 
-    if (sourceUrl.isNotEmpty()) result += "\n\n Подробнее - $sourceUrl"
+    if (sourceUrl.isNotEmpty()) result += "\n\nПодробнее - $sourceUrl"
     return result
+}
+
+fun sanitizeHtmlTags(descriptionBody: String): String {
+    return descriptionBody.replace("&nbsp;", "")
+        .replace("<br>", "\n")
+        .replace("\n\n", "\n")
+        .replace(Regex("<p>.*?</p>", RegexOption.DOT_MATCHES_ALL), "")
+        .replace( Regex("^\\s*$", RegexOption.MULTILINE), "")
 }
 
 fun parseAudioUrl(descriptionBody: String): String? {
