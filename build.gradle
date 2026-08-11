@@ -26,7 +26,7 @@ targetCompatibility = 17
 ext {
     quartz_version = '2.3.2'
     rome_version = '1.19.0'
-    owasp_version = '20220608.1'
+    owasp_version = '20260313.1'
     telegrambots_version = '6.9.7.0'
     }
 dependencies {
