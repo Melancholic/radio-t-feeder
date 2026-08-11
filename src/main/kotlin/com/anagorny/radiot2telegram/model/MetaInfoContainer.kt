@@ -27,6 +27,7 @@ class MetaInfoContainer(srcMetaFile: String, private val mapper: ObjectMapper) {
             MetaInfoEntity()
         }
     } else {
+        logger.warn("Metadata file does not exist by path $srcMetaFile")
         MetaInfoEntity()
     }
 
