@@ -1,5 +1,6 @@
 package com.anagorny.radiot2telegram.services
 
+import com.anagorny.radiot2telegram.config.SystemProperties
 import com.anagorny.radiot2telegram.model.MetaInfoContainer
 import com.anagorny.radiot2telegram.services.impl.ArchiveFeederService
 import mu.KLogging
@@ -19,6 +20,9 @@ class ConsoleAppService : CommandLineRunner {
     lateinit var metaInfoContainer: MetaInfoContainer
 
     @Autowired
+    lateinit var systemProperties: SystemProperties
+
+    @Autowired
     lateinit var mainFeedFetcherScheduler: Scheduler
 
     @Autowired
@@ -26,6 +30,8 @@ class ConsoleAppService : CommandLineRunner {
 
     override fun run(vararg args: String?) {
         logger.info("Console app started with args: ${args.joinToString(", ")}")
+
+        validateInitState()
 
         while (!archiveFeederService.archiveIsSynced()) {
             try {
@@ -51,6 +57,21 @@ class ConsoleAppService : CommandLineRunner {
             logger.error("Error while starting MainFeedFetcher scheduler", e)
         }
 
+    }
+
+    private fun validateInitState() {
+        val hasProcessedData = metaInfoContainer.metaInfoEntity.lastPublishedTime != null
+
+        if (!hasProcessedData) {
+            if (!systemProperties.initMode) {
+                logger.error("No processed data found and INIT_MODE is not enabled, initialization is not allowed. Set INIT_MODE=1 to perform the initial archive backfill.")
+                throw IllegalStateException("No processed data found, initialization is not allowed (INIT_MODE=0 or absent)")
+            }
+            logger.info("No processed data found, INIT_MODE=1 - initial archive backfill will be performed.")
+        } else {
+            val meta = metaInfoContainer.metaInfoEntity
+            logger.info("Existing metadata found (lastIndex=${meta.lastIndex}, lastPublishedTime=${meta.lastPublishedTime}), skipping initialization and proceeding to sync new entries and start the scheduler.")
+        }
     }
 
     private companion object : KLogging()

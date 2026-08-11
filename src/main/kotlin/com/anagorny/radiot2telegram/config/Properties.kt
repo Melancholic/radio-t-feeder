@@ -45,7 +45,8 @@ data class HashTagsSuggestionProperties(
 @ConfigurationProperties(prefix = "system")
 data class SystemProperties(
     val workDir: String,
-    val metadataPath: String
+    val metadataPath: String,
+    val initMode: Boolean = false
 )
 
 @ConfigurationProperties(prefix = "media")
