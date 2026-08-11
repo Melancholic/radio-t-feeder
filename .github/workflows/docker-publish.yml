@@ -15,7 +15,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write # needed to push the release tag created by nebula.release below
       packages: write
 
     steps:
@@ -35,6 +35,27 @@ jobs:
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
+
+      # Auto-release: every merge to master gets tagged & published as a new version,
+      # equivalent to running ./build-release.sh locally. actions/checkout leaves the repo
+      # in detached HEAD, so re-attach the branch first - nebula needs a real branch name.
+      - name: Tag release
+        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+        run: |
+          git checkout -B master
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          ./gradlew build final --no-daemon
+
+      - name: Determine release version
+        if: github.event_name == 'push'
+        run: |
+          if [[ "${GITHUB_REF}" == refs/tags/v* ]]; then
+            echo "RELEASE_VERSION=${GITHUB_REF#refs/tags/v}" >> "$GITHUB_ENV"
+          else
+            tag=$(git describe --tags --exact-match 2>/dev/null || true)
+            echo "RELEASE_VERSION=${tag#v}" >> "$GITHUB_ENV"
+          fi
 
       - name: Build boot jar
         run: ./gradlew bootJar --no-daemon
@@ -63,8 +84,8 @@ jobs:
           images: ${{ env.IMAGE_NAME }}
           tags: |
             type=raw,value=latest,enable={{is_default_branch}}
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{version}},value=${{ env.RELEASE_VERSION }}
+            type=semver,pattern={{major}}.{{minor}},value=${{ env.RELEASE_VERSION }}
             type=sha
 
       - name: Build and push image
