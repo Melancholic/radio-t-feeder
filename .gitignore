@@ -1,37 +1,26 @@
+### Credentials / local deploy ###
 ENV_INIT*.env
+.env
+!.env.example
 do-deploy.sh
 
-HELP.md
+### Gradle build output ###
+build/
 target/
-!.mvn/wrapper/maven-wrapper.jar
-!**/src/main/**
-!**/src/test/**
+out/
+.gradle/
 
-### STS ###
-.apt_generated
-.classpath
-.factorypath
-.project
-.settings
-.springBeans
-.sts4-cache
+### Kotlin compiler daemon ###
+.kotlin/
 
 ### IntelliJ IDEA ###
-.idea
+.idea/
 *.iws
 *.iml
 *.ipr
 
-### NetBeans ###
-/nbproject/private/
-/nbbuild/
-/dist/
-/nbdist/
-/.nb-gradle/
-build/
-
 ### VS Code ###
 .vscode/
 
-.gradle
-/out/
+### OS ###
+.DS_Store

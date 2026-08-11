@@ -33,6 +33,8 @@ system:
   work-dir: ${WORK_DIR}
   #System metadata params
   metadata-path: ${WORK_DIR}/metadata_${TG_CHANNEL_ID}.json
+  #Set to true/1 to allow a first run with no processed metadata (full archive backfill)
+  init-mode: ${INIT_MODE:false}
 
 #FFmpeg params
 media:
