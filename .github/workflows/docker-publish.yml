@@ -36,14 +36,10 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
 
-      # Auto-release: every merge to master gets tagged & published as a new version,
-      # equivalent to running ./build-release.sh locally. actions/checkout leaves the repo
-      # in detached HEAD, so re-attach the branch first - nebula needs a real branch name.
-      # nebula's `final` task pulls in the build/assemble graph itself (to gate tagging on a
-      # successful build), no matter what other tasks are requested alongside it - so a jar
-      # always gets assembled here too, stamped with a pre-release dev version since the tag
-      # doesn't exist yet at that point. Wipe it so "Build boot jar" below starts clean and
-      # produces the single, correctly-versioned jar.
+      # Auto-release: every merge to master is tagged & published, same as ./build-release.sh
+      # locally. Re-attach the branch (checkout leaves it detached) since nebula needs one.
+      # `final` pulls in the whole build/assemble graph, stamping a jar with a pre-release
+      # dev version before it tags - wipe it so "Build boot jar" below starts clean.
       - name: Tag release
         if: github.event_name == 'push' && github.ref == 'refs/heads/master'
         run: |
