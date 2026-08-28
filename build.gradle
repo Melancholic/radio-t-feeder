@@ -27,7 +27,7 @@ ext {
     quartz_version = '2.3.2'
     rome_version = '1.19.0'
     owasp_version = '20220608.1'
-    telegrambots_version = '6.9.7.0'
+    telegrambots_version = '6.9.7.1'
     }
 dependencies {
     implementation "org.springframework.boot:spring-boot-starter-web"
